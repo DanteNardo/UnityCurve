@@ -4,42 +4,46 @@
 /*                  INCLUDES               */
 /*******************************************/
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
 /*******************************************/
 /*                   CLASS                 */
 /*******************************************/
 public class ADSRInput : MonoBehaviour {
 
-    /***************************************/
-    /*               MEMBERS               */
-    /***************************************/
-
+	/***************************************/
+	/*               MEMBERS               */
+	/***************************************/
+	private KeyControl keyControl;
+	public Key key;
 
     /***************************************/
     /*              PROPERTIES             */
     /***************************************/
-    public bool Attack { get; private set; } = false;
-    public bool Release { get; private set; } = false;
+    public bool Attack {
+		get {
+			if (keyControl != null) return keyControl.wasPressedThisFrame;
+			
+			// Default return
+			return false;
+		}
+	}
+    public bool Release {
+		get {
+			if (keyControl != null) return keyControl.wasReleasedThisFrame;
+
+			// Default return
+			return false;
+		}
+	}
 
 	/***************************************/
 	/*               METHODS               */
 	/***************************************/
-	private void LateUpdate() {
-		if (Attack) {
-			Attack = false;
-		}
-
-		if (Release) {
-			Release = false;
-		}
-	}
-
-	public void InputAttack() {
-		Attack = true;
-	}
-
-	public void InputRelease() {
-		Release = true;
+	private void FixedUpdate() {
+		Keyboard keyboard = InputSystem.GetDevice<Keyboard>();
+		keyControl = keyboard[key];
 	}
 
 	/***************************************/

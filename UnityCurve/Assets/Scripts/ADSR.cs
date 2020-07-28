@@ -44,6 +44,7 @@ public enum ADSR_STATE {
 ///          moves from the sustained value 
 ///          back to the default value.
 /// </summary>
+[RequireComponent(typeof(ADSRInput))]
 public class ADSR : MonoBehaviour {
 
     /***************************************/
@@ -168,6 +169,7 @@ public class ADSR : MonoBehaviour {
     /// <param name="toState">The state we want to be in</param>
     public void ChangeToNextState(ADSR_STATE toState) {
         // Immediately change state and reset time
+        Debug.Log("ChangeToNextState --- State:" + toState + ", Time:" + StateTime);
         State = toState;
         StateTime = 0.0f;
 

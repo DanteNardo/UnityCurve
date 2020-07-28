@@ -136,6 +136,7 @@ GameObject:
   - component: {fileID: 408370209}
   - component: {fileID: 408370208}
   - component: {fileID: 408370207}
+  - component: {fileID: 408370211}
   - component: {fileID: 408370206}
   - component: {fileID: 408370205}
   - component: {fileID: 408370204}
@@ -158,6 +159,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e2aea8868de29e46a06e47de7fe7895, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  xInput: {fileID: 408370211}
+  yInput: {fileID: 408370211}
   x: {fileID: 408370206}
   y: {fileID: 408370205}
 --- !u!114 &408370205
@@ -173,6 +176,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PARAMETER_NAME: X
+  input: {fileID: 408370211}
   defaultValue: 1
   attackTarget: 5
   sustainTarget: 3
@@ -193,6 +197,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PARAMETER_NAME: X
+  input: {fileID: 408370211}
   defaultValue: 1
   attackTarget: 3
   sustainTarget: 3
@@ -276,6 +281,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &408370211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 408370203}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2453af4a565b0844abd1ed70de495cfd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: 18
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

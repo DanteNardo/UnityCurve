@@ -14,8 +14,6 @@ public class TestADSR : MonoBehaviour {
 	/***************************************/
 	/*               MEMBERS               */
 	/***************************************/
-	public ADSRInput xInput;
-	public ADSRInput yInput;
 	public ADSR x;
 	public ADSR y;
 
@@ -38,14 +36,6 @@ public class TestADSR : MonoBehaviour {
 		 * used to show contrast between the
 		 * two formula setups.
 		 */
-		if (keyboard.aKey.wasPressedThisFrame) {
-			xInput.InputAttack();
-			yInput.InputAttack();
-		}
-		if (keyboard.aKey.wasReleasedThisFrame) {
-			xInput.InputRelease();
-			yInput.InputRelease();
-		}
 
 		// Update position for demonstration
 		transform.position = new Vector3((float)x.Value, (float)y.Value, 0);
