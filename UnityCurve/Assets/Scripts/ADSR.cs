@@ -45,7 +45,6 @@ public enum ADSR_STATE {
 ///          moves from the sustained value 
 ///          back to the default value.
 /// </summary>
-[RequireComponent(typeof(ADSRInput))]
 public class ADSR : MonoBehaviour {
 
     /***************************************/
@@ -96,7 +95,6 @@ public class ADSR : MonoBehaviour {
 	public InputAction inputAction;
 
     // Inspector variables
-    public ADSRInput input;
     public double defaultValue = 0;
     public double attackTarget;
     public double sustainTarget;
@@ -109,7 +107,21 @@ public class ADSR : MonoBehaviour {
     /*              PROPERTIES             */
     /***************************************/
     public ADSR_STATE State { get; private set; } = ADSR_STATE.NONE;
+
+    /// <summary>
+    /// This is the value that modulates over
+    /// the four ADSR phases.
+    /// </summary>
     public double Value { get; private set; }
+
+    /// <summary>
+    /// This represents the time that has
+    /// occurred over the course of this 
+    /// phase. It resets to 0 at the start
+    /// of each phase. Think of this as
+    /// the time axis on a 2D graph for your
+    /// formulas.
+    /// </summary>
     public double StateTime { get; private set; }
 
     private Expression AttackExpression { get; set; }
@@ -132,51 +144,45 @@ public class ADSR : MonoBehaviour {
         ReleaseExpression = calcEngine.Parse(releaseFormula);
     }
 
-    private void OnEnable() {
-        if (inputActions == null) {
-            inputActions = new InputActions();
+    protected virtual void OnEnable() {
+		/* 
+         * =============================================================
+         * CUSTOMIZE YOUR INPUT HERE FOR TRIGGERING ATTACK AND RELEASE
+         * =============================================================
+		 * Default Behavior: This script assumes that ACTION.started is 
+		 * triggered on the first frame of input only and that
+		 * ACTION.performed is triggered when the input is released.
+         * 
+		 * SETUP WITH INPUT ACTIONS ASSET:
+         * inputActions.ACTION_MAP.ACTION_NAME.started += Attack;
+         * inputActions.ACTION_MAP.ACTION_NAME.performed += Release;
+         * inputActions.ACTION_MAP.ACTION_NAME.Enable();
+         */
 
-			/* 
-             * =============================================================
-             * CUSTOMIZE YOUR INPUT HERE FOR TRIGGERING ATTACK AND RELEASE
-             * =============================================================
-			 * Default Behavior: This script assumes that ACTION.started is 
-			 * triggered on the first frame of input only and that
-			 * ACTION.performed is triggered when the input is released.
-             * 
-			 * SETUP WITH INPUT ACTIONS ASSET:
-             * inputActions.ACTION_MAP.ACTION_NAME.started += Attack;
-             * inputActions.ACTION_MAP.ACTION_NAME.performed += Release;
-             * inputActions.ACTION_MAP.ACTION_NAME.Enable();
-             */
-
-			inputAction.started += Attack;
-			inputAction.performed += Release;
-			inputAction.Enable();
-		}
+		inputAction.started += Attack;
+		inputAction.performed += Release;
+		inputAction.Enable();
     }
 
-    private void OnDisable() {
-        if (inputActions == null) {
-            inputActions = new InputActions();
+    protected virtual void OnDisable() {
+		/* 
+         * =============================================================
+         * CUSTOMIZE YOUR INPUT HERE FOR TRIGGERING ATTACK AND RELEASE
+         * =============================================================
+         * **** This should call the same functions as above, but   ****
+         * **** with -= instead of += and Disable instead of Enable ****
+         * 
+         * =============================================================
+		 * SETUP WITH INPUT ACTIONS ASSET:
+		 * =============================================================
+         * inputActions.ACTION_MAP.ACTION_NAME.started -= Attack;
+         * inputActions.ACTION_MAP.ACTION_NAME.performed -= Release;
+         * inputActions.ACTION_MAP.ACTION_NAME.Disable();
+         */
 
-			/* 
-             * =============================================================
-             * CUSTOMIZE YOUR INPUT HERE FOR TRIGGERING ATTACK AND RELEASE
-             * =============================================================
-             * **** This should call the same functions as above, but   ****
-             * **** with -= instead of += and Disable instead of Enable ****
-             * 
-			 * SETUP WITH INPUT ACTIONS ASSET:
-             * inputActions.ACTION_MAP.ACTION_NAME.started -= Attack;
-             * inputActions.ACTION_MAP.ACTION_NAME.performed -= Release;
-             * inputActions.ACTION_MAP.ACTION_NAME.Disable();
-             */
-
-			inputAction.started -= Attack;
-			inputAction.performed -= Release;
-			inputAction.Disable();
-		}
+		inputAction.started -= Attack;
+		inputAction.performed -= Release;
+		inputAction.Disable();
     }
 
     /// <summary>
@@ -192,7 +198,8 @@ public class ADSR : MonoBehaviour {
                 UpdateValue(DecayExpression);
                 break;
             case ADSR_STATE.SUSTAIN:
-                UpdateValue(SustainExpression);
+                // Sustain does not require any changes to value.
+                // We literally want to keep it constant.
                 break;
             case ADSR_STATE.RELEASE:
                 UpdateValue(ReleaseExpression);
@@ -242,12 +249,14 @@ public class ADSR : MonoBehaviour {
     /// <param name="toState">The state we want to be in</param>
     public void ChangeToNextState(ADSR_STATE toState) {
         // Immediately change state and reset time
-        Debug.Log("ChangeToNextState --- State:" + toState + ", Time:" + StateTime);
+        Debug.Log("ChangeToNextState --- FromState:" + State + ", ToState:" + toState + "Time:" + StateTime);
         State = toState;
         StateTime = 0.0f;
 
-        // Check if everything is set up to skip this state (for example we want no decay and have hit decayTarget)
-        if (HitStateTarget()) {
+        // Check if everything is set up to skip this state
+        // This is used if we want no decay and have hit decayTarget
+        // CANNOT SKIP THE SUSTAIN STATE
+        if (State != ADSR_STATE.SUSTAIN && HitStateTarget()) {
             ChangeToNextState(GetNextState());
             return;
 		}
@@ -274,7 +283,7 @@ public class ADSR : MonoBehaviour {
 
             // Once input is released, we wish to go back to default
             case ADSR_STATE.RELEASE: 
-                return HitTarget((float)defaultValue, true);
+                return HitTarget((float)defaultValue, false);
 
             // There is no target
             default: return false;

@@ -4,18 +4,19 @@
 /*                  INCLUDES               */
 /*******************************************/
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 /*******************************************/
 /*                   CLASS                 */
 /*******************************************/
-public class TestADSR : MonoBehaviour {
+public class ADSRDebug : MonoBehaviour {
 
 	/***************************************/
 	/*               MEMBERS               */
 	/***************************************/
-	public ADSR x;
+	public LineRenderer lineRenderer;
 	public ADSR y;
+	private int index;
+	private double lastY;
 
 	/***************************************/
 	/*              PROPERTIES             */
@@ -25,20 +26,17 @@ public class TestADSR : MonoBehaviour {
 	/***************************************/
 	/*               METHODS               */
 	/***************************************/
-	private void Update() {
-		Keyboard keyboard = InputSystem.GetDevice<Keyboard>();
+	private void FixedUpdate() {
+		if (!Mathf.Approximately((float)y.Value, (float)y.defaultValue)) {
+			lineRenderer.positionCount = index + 1;
+			lineRenderer.SetPosition(index, new Vector3(index * 0.1f, (float)y.Value, 0));
+			index++;
+		}
+	}
 
-		/* 
-		 * DEFAULT BEHAVIOR:
-		 * The object moves linearly along the
-		 * x plane while there are complex
-		 * curves to the y height. This is 
-		 * used to show contrast between the
-		 * two formula setups.
-		 */
-
-		// Update position for demonstration
-		transform.position = new Vector3((float)x.Value, (float)y.Value, 0);
+	private void OnEnable() {
+		index = 0;
+		lineRenderer.SetPositions(new Vector3[0]);
 	}
 
 	/***************************************/
