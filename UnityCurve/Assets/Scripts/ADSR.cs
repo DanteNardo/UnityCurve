@@ -7,6 +7,7 @@ using CalcEngine;
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
@@ -93,6 +94,9 @@ public class ADSR : MonoBehaviour {
 	/// button. See OnEnable and OnDisable.
 	/// </summary>
 	public InputAction inputAction;
+
+    public UnityEvent ADSRStart;
+    public UnityEvent ADSREnd;
 
     // Inspector variables
     public double defaultValue = 0;
@@ -216,6 +220,7 @@ public class ADSR : MonoBehaviour {
     /// <param name="callbackContext">The input callback context.</param>
     private void Attack(InputAction.CallbackContext callbackContext) {
         ChangeToNextState(ADSR_STATE.ATTACK);
+        ADSRStart.Invoke();
     }
 
     /// <summary>
@@ -224,6 +229,7 @@ public class ADSR : MonoBehaviour {
     /// <param name="callbackContext">The input callback context.</param>
     private void Release(InputAction.CallbackContext callbackContext) {
         ChangeToNextState(ADSR_STATE.RELEASE);
+        ADSREnd.Invoke();
     }
 
     /// <summary>
