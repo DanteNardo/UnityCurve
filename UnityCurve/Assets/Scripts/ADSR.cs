@@ -7,6 +7,7 @@ using CalcEngine;
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
 /*******************************************/
@@ -75,6 +76,14 @@ public class ADSR : MonoBehaviour {
     /// </summary>
     public string PARAMETER_NAME = "X";
 
+    /// <summary>
+    /// This is a reference to an asset
+    /// that is created as a part of the
+    /// 2019+ Unity Input system. Most games
+    /// will have a custom one that you use.
+    /// </summary>
+    public InputActions inputActions;
+
     // Inspector variables
     public ADSRInput input;
     public double defaultValue = 0;
@@ -112,20 +121,44 @@ public class ADSR : MonoBehaviour {
         ReleaseExpression = calcEngine.Parse(releaseFormula);
     }
 
+    private void OnEnable() {
+        if (inputActions == null) {
+            inputActions = new InputActions();
+
+            /* 
+             * =============================================================
+             * CUSTOMIZE YOUR INPUT HERE FOR TRIGGERING ATTACK AND RELEASE
+             * =============================================================
+             * 
+             * inputActions.ACTION_MAP.ACTION_NAME.started += Attack;
+             * inputActions.ACTION_MAP.ACTION_NAME.performed += Release;
+             * inputActions.ACTION_MAP.ACTION_NAME.Enable();
+             */
+        }
+    }
+
+    private void OnDisable() {
+        if (inputActions == null) {
+            inputActions = new InputActions();
+
+            /* 
+             * =============================================================
+             * CUSTOMIZE YOUR INPUT HERE FOR TRIGGERING ATTACK AND RELEASE
+             * =============================================================
+             * **** This should call the same functions as above, but   ****
+             * **** with -= instead of += and Disable instead of Enable ****
+             * 
+             * inputActions.ACTION_MAP.ACTION_NAME.started -= Attack;
+             * inputActions.ACTION_MAP.ACTION_NAME.performed -= Release;
+             * inputActions.ACTION_MAP.ACTION_NAME.Disable();
+             */
+        }
+    }
+
     /// <summary>
     /// Updates the parameter's value based on state.
     /// </summary>
 	private void FixedUpdate() {
-        // Kicks off the multi-stage curve paramaterization
-        if (input.Attack) {
-            ChangeToNextState(ADSR_STATE.ATTACK);
-		}
-
-        // Release state can interrupt any other state
-        if (input.Release) {
-            ChangeToNextState(ADSR_STATE.RELEASE);
-		}
-
         // Update Value based on state
         switch (State) {
             case ADSR_STATE.ATTACK:
@@ -144,6 +177,22 @@ public class ADSR : MonoBehaviour {
                 Value = defaultValue;
                 break;
         }
+    }
+
+    /// <summary>
+    /// Triggered by an input event. Changes state to Attack.
+    /// </summary>
+    /// <param name="callbackContext">The input callback context.</param>
+    private void Attack(InputAction.CallbackContext callbackContext) {
+        ChangeToNextState(ADSR_STATE.ATTACK);
+    }
+
+    /// <summary>
+    /// Triggered by an input event. Changes state to Attack.
+    /// </summary>
+    /// <param name="callbackContext">The input callback context.</param>
+    private void Release(InputAction.CallbackContext callbackContext) {
+        ChangeToNextState(ADSR_STATE.RELEASE);
     }
 
     /// <summary>

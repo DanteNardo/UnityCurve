@@ -15,35 +15,42 @@ public class ADSRInput : MonoBehaviour {
 	/***************************************/
 	/*               MEMBERS               */
 	/***************************************/
-	private KeyControl keyControl;
-	public Key key;
+	public InputActions inputActions;
 
-    /***************************************/
-    /*              PROPERTIES             */
-    /***************************************/
-    public bool Attack {
-		get {
-			if (keyControl != null) return keyControl.wasPressedThisFrame;
-			
-			// Default return
-			return false;
-		}
-	}
-    public bool Release {
-		get {
-			if (keyControl != null) return keyControl.wasReleasedThisFrame;
+	/***************************************/
+	/*              PROPERTIES             */
+	/***************************************/
 
-			// Default return
-			return false;
-		}
-	}
 
 	/***************************************/
 	/*               METHODS               */
 	/***************************************/
-	private void FixedUpdate() {
-		Keyboard keyboard = InputSystem.GetDevice<Keyboard>();
-		keyControl = keyboard[key];
+	private void OnEnable() {
+		if (inputActions == null) {
+			inputActions = new InputActions();
+
+			inputActions.Player.Debug.started += Attack;
+			inputActions.Player.Debug.performed += Release;
+			inputActions.Player.Debug.Enable();
+		}
+	}
+
+	private void OnDisable() {
+		if (inputActions == null) {
+			inputActions = new InputActions();
+
+			inputActions.Player.Debug.started -= Attack;
+			inputActions.Player.Debug.performed -= Release;
+			inputActions.Player.Debug.Enable();
+		}
+	}
+
+	private void Attack(InputAction.CallbackContext callbackContext) {
+
+	}
+
+	private void Release(InputAction.CallbackContext callbackContext) {
+
 	}
 
 	/***************************************/
