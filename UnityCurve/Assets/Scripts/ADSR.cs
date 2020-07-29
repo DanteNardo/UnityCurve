@@ -76,13 +76,24 @@ public class ADSR : MonoBehaviour {
     /// </summary>
     public string PARAMETER_NAME = "X";
 
-    /// <summary>
-    /// This is a reference to an asset
-    /// that is created as a part of the
-    /// 2019+ Unity Input system. Most games
-    /// will have a custom one that you use.
-    /// </summary>
-    public InputActions inputActions;
+	/// <summary>
+	/// This is a reference to an asset
+	/// that is created as a part of the
+	/// 2019+ Unity Input system. Most games
+	/// will have a custom one that you use.
+	/// HOWEVER, the default script simply 
+	/// looks for a given InputAction. You
+	/// may modify it to use an asset if
+	/// that is how your game is set up.
+	/// </summary>
+	//public InputActions inputActions;
+
+	/// <summary>
+	/// The code assumes that this reads
+	/// input from some kind of Release
+	/// button. See OnEnable and OnDisable.
+	/// </summary>
+	public InputAction inputAction;
 
     // Inspector variables
     public ADSRInput input;
@@ -125,34 +136,47 @@ public class ADSR : MonoBehaviour {
         if (inputActions == null) {
             inputActions = new InputActions();
 
-            /* 
+			/* 
              * =============================================================
              * CUSTOMIZE YOUR INPUT HERE FOR TRIGGERING ATTACK AND RELEASE
              * =============================================================
+			 * Default Behavior: This script assumes that ACTION.started is 
+			 * triggered on the first frame of input only and that
+			 * ACTION.performed is triggered when the input is released.
              * 
+			 * SETUP WITH INPUT ACTIONS ASSET:
              * inputActions.ACTION_MAP.ACTION_NAME.started += Attack;
              * inputActions.ACTION_MAP.ACTION_NAME.performed += Release;
              * inputActions.ACTION_MAP.ACTION_NAME.Enable();
              */
-        }
+
+			inputAction.started += Attack;
+			inputAction.performed += Release;
+			inputAction.Enable();
+		}
     }
 
     private void OnDisable() {
         if (inputActions == null) {
             inputActions = new InputActions();
 
-            /* 
+			/* 
              * =============================================================
              * CUSTOMIZE YOUR INPUT HERE FOR TRIGGERING ATTACK AND RELEASE
              * =============================================================
              * **** This should call the same functions as above, but   ****
              * **** with -= instead of += and Disable instead of Enable ****
              * 
+			 * SETUP WITH INPUT ACTIONS ASSET:
              * inputActions.ACTION_MAP.ACTION_NAME.started -= Attack;
              * inputActions.ACTION_MAP.ACTION_NAME.performed -= Release;
              * inputActions.ACTION_MAP.ACTION_NAME.Disable();
              */
-        }
+
+			inputAction.started -= Attack;
+			inputAction.performed -= Release;
+			inputAction.Disable();
+		}
     }
 
     /// <summary>
