@@ -20,14 +20,12 @@ public class ADSRGraph : MonoBehaviour {
 	public LineRenderer sustainRenderer;
 	public LineRenderer releaseRenderer;
 	public ADSR y;
-	public float xScale = 1.0f;
 
 	private List<Vector3> attackPoints;
 	private List<Vector3> decayPoints;
 	private List<Vector3> sustainPoints;
 	private List<Vector3> releasePoints;
-	private int rendererX;
-	private int rendererIndex;
+	private float maxYHeight;
 
 	/***************************************/
 	/*              PROPERTIES             */
@@ -39,6 +37,7 @@ public class ADSRGraph : MonoBehaviour {
 	/***************************************/
 	private void Start() {
 		Clear();
+		maxYHeight = (float)(y.attackTarget - y.defaultValue);
 	}
 
 	private void FixedUpdate() {
@@ -65,11 +64,7 @@ public class ADSRGraph : MonoBehaviour {
 		// Clear camera targets
 		camera.ClearTargets();
 
-		// Reset index and X axis variables
-		rendererX = 0;
-		rendererIndex = 0;
-
-		// Clear renderers
+		// Clear renderers and reset to default
 		attackRenderer.positionCount = 0;
 		attackRenderer.SetPositions(new Vector3[0]);
 
@@ -84,33 +79,17 @@ public class ADSRGraph : MonoBehaviour {
 	}
 
 	private void AddPoint(LineRenderer renderer) {
-		// Resets index if we switch to a new renderer
-		ResetIndexIfNecessary(renderer);
-
 		// Add point to renderer
 		// NOTE: Y is normalized because attackTarget is the peak of every graph.
-		renderer.positionCount = rendererIndex + 1;
-		renderer.SetPosition(rendererIndex, new Vector3(rendererX * xScale, (float)(y.Value / y.attackTarget), 0));
+		float normalY = (float)((y.Value - y.defaultValue) / maxYHeight);
+		renderer.positionCount += 1;
+		renderer.SetPosition(renderer.positionCount - 1, new Vector3(0, normalY, 0));
 
 		// Add point to camera targets
 		//camera.AddTarget(renderer.GetPosition(rendererIndex));
 
-		// Increment variables
-		rendererX++;
-		rendererIndex++;
-
 		// Renormalize graph
 		NormalizeGraph();
-	}
-
-	/// <summary>
-	/// Resets rendererIndex when we switch to a new renderer with no vertices.
-	/// </summary>
-	/// <param name="renderer">The potential renderer we switched to</param>
-	private void ResetIndexIfNecessary(LineRenderer renderer) {
-		if (renderer.positionCount == 0) {
-			rendererIndex = 0;
-		}
 	}
 
 	private void NormalizeGraph() {
@@ -121,21 +100,59 @@ public class ADSRGraph : MonoBehaviour {
 			sustainRenderer.positionCount +
 			releaseRenderer.positionCount;
 		float normalizer = 1 / totalPoints;
-		int i;
+		float x;
 
-		for (i = 0; i < attackRenderer.positionCount; i++) {
-			attackRenderer.SetPosition(i, new Vector3(i * normalizer, attackRenderer.GetPosition(i).y, 0));
+		// Normalize all values in the graph
+		for (int i = 0; i < attackRenderer.positionCount; i++) {
+			x = i * normalizer;
+			attackRenderer.SetPosition(i, new Vector3(x, attackRenderer.GetPosition(i).y, 0));
 		}
-		for (int j = 0; j < decayRenderer.positionCount; i++, j++) {
-			decayRenderer.SetPosition(j, new Vector3(i * normalizer, decayRenderer.GetPosition(j).y, 0));
+		for (int j = 0; j < decayRenderer.positionCount; j++) {
+			x = (attackRenderer.positionCount + j) * normalizer;
+			decayRenderer.SetPosition(j, new Vector3(x, decayRenderer.GetPosition(j).y, 0));
 		}
-		for (int k = 0; k < sustainRenderer.positionCount; i++, k++) {
-			sustainRenderer.SetPosition(k, new Vector3(i * normalizer, sustainRenderer.GetPosition(k).y, 0));
+		for (int k = 0; k < sustainRenderer.positionCount; k++) {
+			x = (attackRenderer.positionCount + decayRenderer.positionCount + k) * normalizer;
+			sustainRenderer.SetPosition(k, new Vector3(x, sustainRenderer.GetPosition(k).y, 0));
 		}
-		for (int l = 0; l < releaseRenderer.positionCount; i++, l++) {
-			releaseRenderer.SetPosition(l, new Vector3(i * normalizer, releaseRenderer.GetPosition(l).y, 0));
+		for (int l = 0; l < releaseRenderer.positionCount; l++) {
+			x = (attackRenderer.positionCount + decayRenderer.positionCount + sustainRenderer.positionCount + l) * normalizer;
+			releaseRenderer.SetPosition(l, new Vector3(x, releaseRenderer.GetPosition(l).y, 0));
 		}
-		
+
+		//for (i = 0; i < attackRenderer.positionCount; i++) {
+		//	Vector3 position = new Vector3(
+		//		((i * normalizer) + transform.position.x) * transform.localScale.x,
+		//		(attackRenderer.GetPosition(i).y + transform.position.y) * transform.localScale.y,
+		//		transform.position.z * transform.localScale.z
+		//	);
+		//	attackRenderer.SetPosition(i, position);
+		//}
+		//for (int j = 0; j < decayRenderer.positionCount; i++, j++) {
+		//	Vector3 position = new Vector3(
+		//		((i * normalizer) + transform.position.x) * transform.localScale.x,
+		//		(decayRenderer.GetPosition(j).y + transform.position.y) * transform.localScale.y,
+		//		transform.position.z * transform.localScale.z
+		//	);
+		//	decayRenderer.SetPosition(j, position);
+		//}
+		//for (int k = 0; k < sustainRenderer.positionCount; i++, k++) {
+		//	Vector3 position = new Vector3(
+		//		((i * normalizer) + transform.position.x) * transform.localScale.x,
+		//		(sustainRenderer.GetPosition(k).y + transform.position.y) * transform.localScale.y,
+		//		transform.position.z * transform.localScale.z
+		//	);
+		//	sustainRenderer.SetPosition(k, position);
+		//}
+		//for (int l = 0; l < releaseRenderer.positionCount; i++, l++) {
+		//	Vector3 position = new Vector3(
+		//		((i * normalizer) + transform.position.x) * transform.localScale.x,
+		//		(releaseRenderer.GetPosition(l).y + transform.position.y) * transform.localScale.y,
+		//		transform.position.z * transform.localScale.z
+		//	);
+		//	releaseRenderer.SetPosition(l, position);
+		//}
+
 		// FOR DEBUGGING, TODO: REMOVE
 		if (attackRenderer.positionCount > 1) {
 			Debug.Log("A:0:" + attackRenderer.GetPosition(0));

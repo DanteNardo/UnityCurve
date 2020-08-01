@@ -4,12 +4,9 @@
 /*                  INCLUDES               */
 /*******************************************/
 using CalcEngine;
-using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
 
 /*******************************************/
 /*                    ENUM                 */
@@ -95,7 +92,10 @@ public class ADSR : MonoBehaviour {
 	/// </summary>
 	public InputAction inputAction;
 
-    public UnityEvent ADSRStart;
+    public UnityEvent ADSRAttack;
+    public UnityEvent ADSRDecay;
+    public UnityEvent ADSRSustain;
+    public UnityEvent ADSRRelease;
     public UnityEvent ADSREnd;
 
     // Inspector variables
@@ -146,6 +146,9 @@ public class ADSR : MonoBehaviour {
         DecayExpression   = calcEngine.Parse(decayFormula);
         SustainExpression = calcEngine.Parse(sustainFormula);
         ReleaseExpression = calcEngine.Parse(releaseFormula);
+
+        // Initialize Value
+        Value = defaultValue;
     }
 
     protected virtual void OnEnable() {
@@ -208,9 +211,6 @@ public class ADSR : MonoBehaviour {
             case ADSR_STATE.RELEASE:
                 UpdateValue(ReleaseExpression);
                 break;
-            default:
-                Value = defaultValue;
-                break;
         }
     }
 
@@ -219,8 +219,8 @@ public class ADSR : MonoBehaviour {
     /// </summary>
     /// <param name="callbackContext">The input callback context.</param>
     private void Attack(InputAction.CallbackContext callbackContext) {
+        // If for some reason Value isn't default, we switch it to default.
         ChangeToNextState(ADSR_STATE.ATTACK);
-        ADSRStart.Invoke();
     }
 
     /// <summary>
@@ -229,7 +229,6 @@ public class ADSR : MonoBehaviour {
     /// <param name="callbackContext">The input callback context.</param>
     private void Release(InputAction.CallbackContext callbackContext) {
         ChangeToNextState(ADSR_STATE.RELEASE);
-        ADSREnd.Invoke();
     }
 
     /// <summary>
@@ -250,7 +249,7 @@ public class ADSR : MonoBehaviour {
 
     /// <summary>
     /// Handles changing the state from one to another. 
-    /// Checks for errors along the way.
+    /// Checks for errors along the way and invokes callbacks.
     /// </summary>
     /// <param name="toState">The state we want to be in</param>
     public void ChangeToNextState(ADSR_STATE toState) {
@@ -265,6 +264,26 @@ public class ADSR : MonoBehaviour {
         if (State != ADSR_STATE.SUSTAIN && HitStateTarget()) {
             ChangeToNextState(GetNextState());
             return;
+        }
+        // Callback functions if we don't skip the state
+        else {
+            switch (toState) {
+                case ADSR_STATE.ATTACK:
+                    ADSRAttack.Invoke();
+                    break;
+                case ADSR_STATE.DECAY:
+                    ADSRDecay.Invoke();
+                    break;
+                case ADSR_STATE.SUSTAIN:
+                    ADSRSustain.Invoke();
+                    break;
+                case ADSR_STATE.RELEASE:
+                    ADSRRelease.Invoke();
+                    break;
+                case ADSR_STATE.NONE:
+                    ADSREnd.Invoke();
+                    break;
+            }
 		}
     }
 
@@ -308,10 +327,14 @@ public class ADSR : MonoBehaviour {
             return true;
 
         // These are the cases where the value oversteps the target
-        if (increasingValue && Value > target)
+        if (increasingValue && Value > target) {
+            Value = target;
             return true;
-        if (!increasingValue && Value < target)
+        }
+        if (!increasingValue && Value < target) {
+            Value = target;
             return true;
+        }
 
         // Default return
         return false;
@@ -351,9 +374,6 @@ public class ADSR : MonoBehaviour {
 
         // Calculate the result of the expression
         var result = calcEngine.Evaluate(expression);
-
-        // For debugging, TODO: REMOVE
-        Debug.Log("RESULT: '" + result + "', Type: " + result.GetType().Name);
 
         // Return delta
         return (double)result;
