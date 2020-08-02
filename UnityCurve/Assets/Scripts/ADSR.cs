@@ -120,6 +120,14 @@ public class ADSR : MonoBehaviour {
 
     /// <summary>
     /// This represents the time that has
+    /// occurred over the course of all 
+    /// phases. It resets to 0 once Value
+    /// returns to defaultValue.
+    /// </summary>
+    public double TotalTime { get; private set; }
+
+    /// <summary>
+    /// This represents the time that has
     /// occurred over the course of this 
     /// phase. It resets to 0 at the start
     /// of each phase. Think of this as
@@ -207,6 +215,9 @@ public class ADSR : MonoBehaviour {
             case ADSR_STATE.SUSTAIN:
                 // Sustain does not require any changes to value.
                 // We literally want to keep it constant.
+                // Just update time.
+                StateTime += Time.fixedDeltaTime;
+                TotalTime += Time.fixedDeltaTime;
                 break;
             case ADSR_STATE.RELEASE:
                 UpdateValue(ReleaseExpression);
@@ -238,6 +249,7 @@ public class ADSR : MonoBehaviour {
     /// <param name="expression">The formula to use to calculate the changes to Value.</param>
     private void UpdateValue(Expression expression) {
         StateTime += Time.fixedDeltaTime;
+        TotalTime += Time.fixedDeltaTime;
         Value += CalculateDelta(expression);
 
         // Change to the next state once we hit target value or release input.
@@ -253,10 +265,15 @@ public class ADSR : MonoBehaviour {
     /// </summary>
     /// <param name="toState">The state we want to be in</param>
     public void ChangeToNextState(ADSR_STATE toState) {
-        // Immediately change state and reset time
-        Debug.Log("ChangeToNextState --- FromState:" + State + ", ToState:" + toState + "Time:" + StateTime);
+        // Immediately change state and reset state time
+        Debug.Log("ChangeToNextState --- FromState:" + State + ", ToState:" + toState + ", TotalTime:" + TotalTime + ", StateTime:" + StateTime);
         State = toState;
         StateTime = 0.0f;
+
+        // Reset total time if we have returned to default state
+        if (State == ADSR_STATE.NONE) {
+            TotalTime = 0.0f;
+		}
 
         // Check if everything is set up to skip this state
         // This is used if we want no decay and have hit decayTarget

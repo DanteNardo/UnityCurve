@@ -21,158 +21,193 @@ public class ADSRGraph : MonoBehaviour {
 	public LineRenderer releaseRenderer;
 	public ADSR y;
 
-	private List<Vector3> attackPoints;
-	private List<Vector3> decayPoints;
-	private List<Vector3> sustainPoints;
-	private List<Vector3> releasePoints;
-	private float maxYHeight;
-
 	/***************************************/
 	/*              PROPERTIES             */
 	/***************************************/
-
+	private ADSRGraphLine AttackLine { get; set; }
+	private ADSRGraphLine DecayLine { get; set; }
+	private ADSRGraphLine SustainLine { get; set; }
+	private ADSRGraphLine ReleaseLine { get; set; }
+	private float MaxYHeight { get; set; }
 
 	/***************************************/
 	/*               METHODS               */
 	/***************************************/
 	private void Start() {
+		// Instantiate new graph line variables
+		AttackLine = new ADSRGraphLine();
+		DecayLine = new ADSRGraphLine();
+		SustainLine = new ADSRGraphLine();
+		ReleaseLine = new ADSRGraphLine();
+
+		// Initialize line events
+		AttackLine.OnLineChange += UpdateRenderers;
+		DecayLine.OnLineChange += UpdateRenderers;
+		SustainLine.OnLineChange += UpdateRenderers;
+		ReleaseLine.OnLineChange += UpdateRenderers;
+
+		// Clear and set all data to empty
 		Clear();
-		maxYHeight = (float)(y.attackTarget - y.defaultValue);
+
+		// Calculate the maximum height for the graph
+		MaxYHeight = (float)(y.attackTarget - y.defaultValue);
 	}
 
 	private void FixedUpdate() {
-		// Update points based on state as long as the ADSR variable is not at default
-		if (!Mathf.Approximately((float)y.Value, (float)y.defaultValue)) {
-			switch (y.State) {
-				case ADSR_STATE.ATTACK:
-					AddPoint(attackRenderer);
-					break;
-				case ADSR_STATE.DECAY:
-					AddPoint(decayRenderer);
-					break;
-				case ADSR_STATE.SUSTAIN:
-					AddPoint(sustainRenderer);
-					break;
-				case ADSR_STATE.RELEASE:
-					AddPoint(releaseRenderer);
-					break;
-			}
-		}
+		AddPoint();
 	}
 
 	public void Clear() {
 		// Clear camera targets
 		camera.ClearTargets();
 
-		// Clear renderers and reset to default
-		attackRenderer.positionCount = 0;
-		attackRenderer.SetPositions(new Vector3[0]);
-
-		decayRenderer.positionCount = 0;
-		decayRenderer.SetPositions(new Vector3[0]);
-
-		sustainRenderer.positionCount = 0;
-		sustainRenderer.SetPositions(new Vector3[0]);
-
-		releaseRenderer.positionCount = 0;
-		releaseRenderer.SetPositions(new Vector3[0]);
+		// Clear line data
+		AttackLine.Clear();
+		DecayLine.Clear();
+		SustainLine.Clear();
+		ReleaseLine.Clear();
 	}
 
-	private void AddPoint(LineRenderer renderer) {
-		// Add point to renderer
-		// NOTE: Y is normalized because attackTarget is the peak of every graph.
-		float normalY = (float)((y.Value - y.defaultValue) / maxYHeight);
-		renderer.positionCount += 1;
-		renderer.SetPosition(renderer.positionCount - 1, new Vector3(0, normalY, 0));
-
-		// Add point to camera targets
-		//camera.AddTarget(renderer.GetPosition(rendererIndex));
-
-		// Renormalize graph
-		NormalizeGraph();
+	public void AddPoint() {
+		switch (y.State) {
+			case ADSR_STATE.ATTACK:
+				AttackLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
+				break;
+			case ADSR_STATE.DECAY:
+				DecayLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
+				break;
+			case ADSR_STATE.SUSTAIN:
+				SustainLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
+				break;
+			case ADSR_STATE.RELEASE:
+				ReleaseLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
+				break;
+		}
 	}
 
-	private void NormalizeGraph() {
-		// Create percentage values from 
-		float totalPoints = 
+	private void UpdateRenderers() {
+		// Keep track of starting x position
+		float startX = 0;
+
+		// Update attack line and increment positionCount
+		UpdateRenderer(attackRenderer, AttackLine, 0);
+		startX += attackRenderer.positionCount;
+
+		// Update decay line and increment positionCount
+		UpdateRenderer(decayRenderer, DecayLine, startX);
+		startX += decayRenderer.positionCount;
+
+		// Update sustain line and increment positionCount
+		UpdateRenderer(sustainRenderer, SustainLine, startX);
+		startX += sustainRenderer.positionCount;
+
+		// Update release line
+		UpdateRenderer(releaseRenderer, ReleaseLine, startX);
+	}
+
+	private void UpdateRenderer(LineRenderer lineRenderer, ADSRGraphLine line, float startX) {
+		float totalPoints =
 			attackRenderer.positionCount +
 			decayRenderer.positionCount +
 			sustainRenderer.positionCount +
 			releaseRenderer.positionCount;
-		float normalizer = 1 / totalPoints;
-		float x;
+		Vector3[] renderPoints = GetGraphPoints(line, totalPoints, startX);
+		lineRenderer.positionCount = renderPoints.Length;
+		lineRenderer.SetPositions(renderPoints);
+	}
 
-		// Normalize all values in the graph
-		for (int i = 0; i < attackRenderer.positionCount; i++) {
-			x = i * normalizer;
-			attackRenderer.SetPosition(i, new Vector3(x, attackRenderer.GetPosition(i).y, 0));
-		}
-		for (int j = 0; j < decayRenderer.positionCount; j++) {
-			x = (attackRenderer.positionCount + j) * normalizer;
-			decayRenderer.SetPosition(j, new Vector3(x, decayRenderer.GetPosition(j).y, 0));
-		}
-		for (int k = 0; k < sustainRenderer.positionCount; k++) {
-			x = (attackRenderer.positionCount + decayRenderer.positionCount + k) * normalizer;
-			sustainRenderer.SetPosition(k, new Vector3(x, sustainRenderer.GetPosition(k).y, 0));
-		}
-		for (int l = 0; l < releaseRenderer.positionCount; l++) {
-			x = (attackRenderer.positionCount + decayRenderer.positionCount + sustainRenderer.positionCount + l) * normalizer;
-			releaseRenderer.SetPosition(l, new Vector3(x, releaseRenderer.GetPosition(l).y, 0));
+	private Vector3[] GetGraphPoints(ADSRGraphLine line, float totalPoints, float startX) {
+		// Create graph points object and other variables for processing
+		Vector3[] graphPoints = new Vector3[line.Points.Count];
+		float xNormalizer = 1.0f / totalPoints;
+
+		// Generate graph points based on time and value and then normalize them.
+		// - Adjust each point's x value based on previous lines in the graph
+		// - Normalize x values with normalizer
+		// - Normalize y values by subtracting default value and dividing by maxY
+		for (int i = 0; i < graphPoints.Length; i++) {
+			graphPoints[i] = new Vector3(
+				(startX + i) * xNormalizer,
+				(float)(line.Points[i].Value - y.defaultValue) / MaxYHeight,
+				0
+			);
 		}
 
-		//for (i = 0; i < attackRenderer.positionCount; i++) {
-		//	Vector3 position = new Vector3(
-		//		((i * normalizer) + transform.position.x) * transform.localScale.x,
-		//		(attackRenderer.GetPosition(i).y + transform.position.y) * transform.localScale.y,
-		//		transform.position.z * transform.localScale.z
-		//	);
-		//	attackRenderer.SetPosition(i, position);
-		//}
-		//for (int j = 0; j < decayRenderer.positionCount; i++, j++) {
-		//	Vector3 position = new Vector3(
-		//		((i * normalizer) + transform.position.x) * transform.localScale.x,
-		//		(decayRenderer.GetPosition(j).y + transform.position.y) * transform.localScale.y,
-		//		transform.position.z * transform.localScale.z
-		//	);
-		//	decayRenderer.SetPosition(j, position);
-		//}
-		//for (int k = 0; k < sustainRenderer.positionCount; i++, k++) {
-		//	Vector3 position = new Vector3(
-		//		((i * normalizer) + transform.position.x) * transform.localScale.x,
-		//		(sustainRenderer.GetPosition(k).y + transform.position.y) * transform.localScale.y,
-		//		transform.position.z * transform.localScale.z
-		//	);
-		//	sustainRenderer.SetPosition(k, position);
-		//}
-		//for (int l = 0; l < releaseRenderer.positionCount; i++, l++) {
-		//	Vector3 position = new Vector3(
-		//		((i * normalizer) + transform.position.x) * transform.localScale.x,
-		//		(releaseRenderer.GetPosition(l).y + transform.position.y) * transform.localScale.y,
-		//		transform.position.z * transform.localScale.z
-		//	);
-		//	releaseRenderer.SetPosition(l, position);
-		//}
+		// Apply parent transformations
+		for (int j = 0; j < graphPoints.Length; j++) {
+			graphPoints[j] = new Vector3(
+				(graphPoints[j].x * transform.localScale.x) + transform.position.x,
+				(graphPoints[j].y * transform.localScale.y) + transform.position.y,
+				(graphPoints[j].z * transform.localScale.z) + transform.position.z
+			);
+		}
 
-		// FOR DEBUGGING, TODO: REMOVE
-		if (attackRenderer.positionCount > 1) {
-			Debug.Log("A:0:" + attackRenderer.GetPosition(0));
-			Debug.Log("A:!:" + attackRenderer.GetPosition(attackRenderer.positionCount - 1));
-		}
-		if (decayRenderer.positionCount > 1) {
-			Debug.Log("D:0:" + decayRenderer.GetPosition(0));
-			Debug.Log("D:!:" + decayRenderer.GetPosition(decayRenderer.positionCount - 1));
-		}
-		if (sustainRenderer.positionCount > 1) {
-			Debug.Log("S:0:" + sustainRenderer.GetPosition(0));
-			Debug.Log("S:!:" + sustainRenderer.GetPosition(sustainRenderer.positionCount - 1));
-		}
-		if (releaseRenderer.positionCount > 1) {
-			Debug.Log("R:0:" + releaseRenderer.GetPosition(0));
-			Debug.Log("R:!:" + releaseRenderer.GetPosition(releaseRenderer.positionCount - 1));
-		}
+		// Return value
+		return graphPoints;
 	}
 
 	/***************************************/
 	/*              COROUTINES             */
 	/***************************************/
+}
+
+
+/*******************************************/
+/*                    CLASS                */
+/*******************************************/
+public class ADSRGraphLine {
+
+	/***************************************/
+	/*               MEMBERS               */
+	/***************************************/
+	public delegate void OnLineChangeDelegate();
+	public event OnLineChangeDelegate OnLineChange;
+
+	/***************************************/
+	/*              PROPERTIES             */
+	/***************************************/
+	public List<ADSRGraphPoint> Points { get; private set; }
+
+	/***************************************/
+	/*               METHODS               */
+	/***************************************/
+	public ADSRGraphLine() {
+		Points = new List<ADSRGraphPoint>();
+	}
+
+	public void Add(ADSRGraphPoint point) {
+		Points.Add(point);
+		OnLineChange?.Invoke();
+	}
+
+	public void Clear() {
+		Points.Clear();
+		OnLineChange?.Invoke();
+	}
+}
+
+
+/*******************************************/
+/*                   STRUCT                */
+/*******************************************/
+public struct ADSRGraphPoint {
+
+	/***************************************/
+	/*              PROPERTIES             */
+	/***************************************/
+	public float TotalTime { get; private set; }
+	public float Value { get; private set; }
+
+	/***************************************/
+	/*               METHODS               */
+	/***************************************/
+	public ADSRGraphPoint(double timestamp, double value) {
+		TotalTime = (float)timestamp;
+		Value = (float)value;
+	}
+
+	public ADSRGraphPoint(float timestamp, float value) {
+		TotalTime = timestamp;
+		Value = value;
+	}
 }
