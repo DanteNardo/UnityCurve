@@ -173,6 +173,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e2aea8868de29e46a06e47de7fe7895, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  multiTargetCamera: {fileID: 963194229}
+  xAxisRenderer: {fileID: 1666592421}
+  yAxisRenderer: {fileID: 868438656}
   attackRenderer: {fileID: 1777423551}
   decayRenderer: {fileID: 1806482448}
   sustainRenderer: {fileID: 1837264856}
@@ -716,15 +719,15 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 166e2025eefc92244863030963b0f27b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  offset: {x: 0, y: 0, z: -40}
-  smoothTime: 0.5
-  zoomSpeed: 10
-  bufferPercent: 10
+  offset: {x: 0, y: 0, z: -10}
+  smoothTime: 0.25
+  zoomSpeed: 5
+  bufferPercent: 5
 --- !u!1 &1666592419
 GameObject:
   m_ObjectHideFlags: 0

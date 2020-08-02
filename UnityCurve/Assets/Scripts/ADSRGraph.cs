@@ -14,6 +14,7 @@ public class ADSRGraph : MonoBehaviour {
 	/***************************************/
 	/*               MEMBERS               */
 	/***************************************/
+	public MultiTargetCamera multiTargetCamera;
 	public LineRenderer xAxisRenderer;
 	public LineRenderer yAxisRenderer;
 	public LineRenderer attackRenderer;
@@ -55,6 +56,8 @@ public class ADSRGraph : MonoBehaviour {
 
 		// Update X and Y Axis Lines based on transform
 		InitializeXAndYAxis();
+
+		// Add target to camera
 	}
 
 	private void FixedUpdate() {
@@ -62,7 +65,29 @@ public class ADSRGraph : MonoBehaviour {
 	}
 
 	private void InitializeXAndYAxis() {
-		//xAxisRenderer.SetPositions(TransformPoints(xAxisRenderer.getp))
+		// Prepare vector arrays (necessary for GetPositions call)
+		Vector3[] xAxisPoints = new Vector3[xAxisRenderer.positionCount];
+		Vector3[] yAxisPoints = new Vector3[yAxisRenderer.positionCount];
+
+		// Store vector arrays (using ref)
+		xAxisRenderer.GetPositions(xAxisPoints);
+		yAxisRenderer.GetPositions(yAxisPoints);
+
+		// Transform vector arrays
+		TransformPoints(ref xAxisPoints);
+		TransformPoints(ref yAxisPoints);
+
+		// Set camera to track the axises
+		foreach (var xPoint in xAxisPoints) {
+			multiTargetCamera.AddTarget(xPoint);
+		}
+		foreach (var yPoint in yAxisPoints) {
+			multiTargetCamera.AddTarget(yPoint);
+		}
+
+		// Set renderer positions
+		xAxisRenderer.SetPositions(xAxisPoints);
+		yAxisRenderer.SetPositions(yAxisPoints);
 	}
 
 	public void Clear() {
