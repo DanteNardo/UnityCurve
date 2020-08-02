@@ -14,7 +14,8 @@ public class ADSRGraph : MonoBehaviour {
 	/***************************************/
 	/*               MEMBERS               */
 	/***************************************/
-	public new MultiTargetCamera camera;
+	public LineRenderer xAxisRenderer;
+	public LineRenderer yAxisRenderer;
 	public LineRenderer attackRenderer;
 	public LineRenderer decayRenderer;
 	public LineRenderer sustainRenderer;
@@ -51,16 +52,20 @@ public class ADSRGraph : MonoBehaviour {
 
 		// Calculate the maximum height for the graph
 		MaxYHeight = (float)(y.attackTarget - y.defaultValue);
+
+		// Update X and Y Axis Lines based on transform
+		InitializeXAndYAxis();
 	}
 
 	private void FixedUpdate() {
 		AddPoint();
 	}
 
-	public void Clear() {
-		// Clear camera targets
-		camera.ClearTargets();
+	private void InitializeXAndYAxis() {
+		//xAxisRenderer.SetPositions(TransformPoints(xAxisRenderer.getp))
+	}
 
+	public void Clear() {
 		// Clear line data
 		AttackLine.Clear();
 		DecayLine.Clear();
@@ -117,9 +122,11 @@ public class ADSRGraph : MonoBehaviour {
 	}
 
 	private Vector3[] GetGraphPoints(ADSRGraphLine line, float totalPoints, float startX) {
-		// Create graph points object and other variables for processing
+		// Create graph points object
 		Vector3[] graphPoints = new Vector3[line.Points.Count];
-		float xNormalizer = 1.0f / totalPoints;
+
+		// Create normalization multiplier (default value is 1)
+		float xNormalizer = totalPoints == 0 ? 1.0f : 1.0f / totalPoints;
 
 		// Generate graph points based on time and value and then normalize them.
 		// - Adjust each point's x value based on previous lines in the graph
@@ -134,16 +141,20 @@ public class ADSRGraph : MonoBehaviour {
 		}
 
 		// Apply parent transformations
-		for (int j = 0; j < graphPoints.Length; j++) {
-			graphPoints[j] = new Vector3(
-				(graphPoints[j].x * transform.localScale.x) + transform.position.x,
-				(graphPoints[j].y * transform.localScale.y) + transform.position.y,
-				(graphPoints[j].z * transform.localScale.z) + transform.position.z
-			);
-		}
+		TransformPoints(ref graphPoints);
 
 		// Return value
 		return graphPoints;
+	}
+
+	private void TransformPoints(ref Vector3[] points) {
+		for (int j = 0; j < points.Length; j++) {
+			points[j] = new Vector3(
+				(points[j].x * transform.localScale.x) + transform.position.x,
+				(points[j].y * transform.localScale.y) + transform.position.y,
+				(points[j].z * transform.localScale.z) + transform.position.z
+			);
+		}
 	}
 
 	/***************************************/
