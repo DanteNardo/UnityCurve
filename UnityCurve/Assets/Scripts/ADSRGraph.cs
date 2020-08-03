@@ -22,6 +22,14 @@ public class ADSRGraph : MonoBehaviour {
 	public LineRenderer sustainRenderer;
 	public LineRenderer releaseRenderer;
 	public ADSR y;
+	public TextMesh attackDurationText;
+	public TextMesh decayDurationText;
+	public TextMesh sustainDurationText;
+	public TextMesh releaseDurationText;
+	public TextMesh attackTotalTimeText;
+	public TextMesh decayTotalTimeText;
+	public TextMesh sustainTotalTimeText;
+	public TextMesh releaseTotalTimeText;
 
 	/***************************************/
 	/*              PROPERTIES             */
@@ -96,21 +104,39 @@ public class ADSRGraph : MonoBehaviour {
 		DecayLine.Clear();
 		SustainLine.Clear();
 		ReleaseLine.Clear();
-	}
+
+		// Clear text data
+		attackDurationText.text = "";
+		decayDurationText.text = "";
+		sustainDurationText.text = "";
+		releaseDurationText.text = "";
+		attackTotalTimeText.text = "";
+		decayTotalTimeText.text = "";
+		sustainTotalTimeText.text = "";
+		releaseTotalTimeText.text = "";
+}
 
 	public void AddPoint() {
 		switch (y.State) {
 			case ADSR_STATE.ATTACK:
 				AttackLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
+				attackDurationText.text = y.StateTime.ToString("0.##") + "s";
+				attackTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.DECAY:
 				DecayLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
+				decayDurationText.text = y.StateTime.ToString("0.##") + "s";
+				decayTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.SUSTAIN:
 				SustainLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
+				sustainDurationText.text = y.StateTime.ToString("0.##") + "s";
+				sustainTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.RELEASE:
 				ReleaseLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
+				releaseDurationText.text = y.StateTime.ToString("0.##") + "s";
+				releaseTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 		}
 	}
