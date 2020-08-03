@@ -370,7 +370,7 @@ MonoBehaviour:
   decayRenderer: {fileID: 1806482448}
   sustainRenderer: {fileID: 1837264856}
   releaseRenderer: {fileID: 425782414}
-  y: {fileID: 408370205}
+  y: {fileID: 408370204}
   attackDurationText: {fileID: 1841271556}
   decayDurationText: {fileID: 653893779}
   sustainDurationText: {fileID: 1122381043}
@@ -611,7 +611,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 408370210}
-  - component: {fileID: 408370205}
+  - component: {fileID: 408370204}
   m_Layer: 0
   m_Name: ADSR Example
   m_TagString: Untagged
@@ -619,7 +619,7 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &408370205
+--- !u!114 &408370204
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -628,26 +628,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 408370203}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aee8aa493b64e6643aaeb021c637feb2, type: 3}
+  m_Script: {fileID: 11500000, guid: 567ce8fffdabee24ebdeb6a08fd7a80d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PARAMETER_NAME: X
-  inputAction:
-    m_Name: Input
-    m_Type: 1
-    m_ExpectedControlType: Button
-    m_Id: 2f556988-3dd4-4ad5-b348-d07658839bee
-    m_Processors: 
-    m_Interactions: Press(behavior=1)
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: 4a97dc2d-4a86-4d5b-a2f3-483b7412967d
-      m_Path: <Keyboard>/0
-      m_Interactions: 
-      m_Processors: 
-      m_Groups: 
-      m_Action: Input
-      m_Flags: 0
+  UpdateType: 0
+  ValueType: 2
   ADSRAttack:
     m_PersistentCalls:
       m_Calls:
@@ -677,25 +663,29 @@ MonoBehaviour:
       m_Calls: []
   ADSRStateChange:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 215755911}
-        m_TargetAssemblyTypeName: ADSRGraph, Assembly-CSharp
-        m_MethodName: ConnectLines
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   defaultValue: 0
   attackTarget: 1
   sustainTarget: 0.8
   attackFormula: POWER(X, 2)
   decayFormula: X - (X*1.5)
   releaseFormula: -1 * POWER(X, 4)
+  inputAction:
+    m_Name: Input
+    m_Type: 1
+    m_ExpectedControlType: Button
+    m_Id: d5f11061-5ac0-463e-98f6-cd1154b50251
+    m_Processors: 
+    m_Interactions: Press(behavior=1)
+    m_SingletonActionBindings:
+    - m_Name: 
+      m_Id: 1585999c-ee8d-43cc-b08f-98cf31c1ccb4
+      m_Path: <Keyboard>/0
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Input
+      m_Flags: 0
 --- !u!4 &408370210
 Transform:
   m_ObjectHideFlags: 0

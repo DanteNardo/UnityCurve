@@ -11,12 +11,38 @@ using UnityEngine.InputSystem;
 /*******************************************/
 /*                    ENUM                 */
 /*******************************************/
+
+/// <summary>
+/// Used to easily track which ADSR envelope
+/// phase this variable is currently in.
+/// </summary>
 public enum ADSR_STATE {
     ATTACK,
     DECAY,
     SUSTAIN,
     RELEASE,
     NONE
+}
+
+/// <summary>
+/// Used to easily track and change 
+/// Monobehavior update method.
+/// </summary>
+public enum UPDATE_TYPES {
+    UPDATE = 0,
+    LATE_UPDATE = 1,
+    FIXED_UPDATE = 2
+}
+
+/// <summary>
+/// Used to determine what kind of number
+/// variable we want this ADSR variable
+/// to be.
+/// </summary>
+public enum VALUE_TYPES {
+    INT = 0,
+    FLOAT = 1,
+    DOUBLE = 2
 }
 
 /*******************************************/
@@ -29,7 +55,6 @@ public enum ADSR_STATE {
 /// modulation of a parameter over time, in 
 /// four distinct phases."
 /// ----------------------------------------
-/// 
 /// ATTACK:  The phase where the parameter
 ///          moves from the default value to
 ///          the highest point.
@@ -42,12 +67,24 @@ public enum ADSR_STATE {
 /// RELEASE: The phase where the parameter
 ///          moves from the sustained value 
 ///          back to the default value.
+/// ----------------------------------------
+/// The point of this class is to easily
+/// add curves of varying shapes to the
+/// modulation of a value based on input.
+/// Purely linear increases and decreases
+/// in a car's driving force is not great
+/// game feel. This gives developers fast
+/// and easy control over the curves of
+/// a value instead of having to create
+/// whole complicated and mismanaged
+/// state machines and input systems.
 /// </summary>
-public class ADSR : MonoBehaviour {
+public abstract class ADSR : MonoBehaviour {
 
     /***************************************/
     /*               MEMBERS               */
     /***************************************/
+
     /// <summary>
     /// https://github.com/Bernardo-Castilho/CalcEngine
     /// This is an Open-Source excel formula 
@@ -73,43 +110,114 @@ public class ADSR : MonoBehaviour {
     /// </summary>
     public string PARAMETER_NAME = "X";
 
-	/// <summary>
-	/// This is a reference to an asset
-	/// that is created as a part of the
-	/// 2019+ Unity Input system. Most games
-	/// will have a custom one that you use.
-	/// HOWEVER, the default script simply 
-	/// looks for a given InputAction. You
-	/// may modify it to use an asset if
-	/// that is how your game is set up.
-	/// </summary>
-	//public InputActions inputActions;
+    /// <summary>
+    /// This determines which update method 
+    /// this variable uses. Consequently, it 
+    /// also determines which type of 
+    /// deltaTime to use for our time 
+    /// recordings.
+    /// </summary>
+    public UPDATE_TYPES UpdateType = UPDATE_TYPES.UPDATE;
 
-	/// <summary>
-	/// The code assumes that this reads
-	/// input from some kind of Release
-	/// button. See OnEnable and OnDisable.
-	/// </summary>
-	public InputAction inputAction;
+    /// <summary>
+    /// This determines how Value is stored.
+    /// Value can be an int, float, or double.
+    /// NOTE: All calculations are done
+    /// with doubles and then the value
+    /// is either converted to float or int.
+    /// </summary>
+    public VALUE_TYPES ValueType = VALUE_TYPES.DOUBLE;
 
+    /// <summary>
+    /// Invoked on first frame of Attack state.
+    /// </summary>
+    [Space(10)]
     public UnityEvent ADSRAttack;
+
+    /// <summary>
+    /// Invoked on first frame of Decay state.
+    /// </summary>
     public UnityEvent ADSRDecay;
+
+    /// <summary>
+    /// Invoked on first frame of Sustain state.
+    /// </summary>
     public UnityEvent ADSRSustain;
+
+    /// <summary>
+    /// Invoked on first frame of Release state.
+    /// </summary>
     public UnityEvent ADSRRelease;
+
+    /// <summary>
+    /// Invoked on first frame of None state.
+    /// </summary>
     public UnityEvent ADSREnd;
+
+    /// <summary>
+    /// Invoked on first frame of every state.
+    /// </summary>
     public UnityEvent ADSRStateChange;
 
-    // Inspector variables
+    /// <summary>
+    /// This is the default value for the ADSR
+    /// variable. This is also the minimum 
+    /// value and Value can never be lower 
+    /// than it.
+    /// </summary>
     public double defaultValue = 0;
+
+    /// <summary>
+    /// This is the target value for the
+    /// attack phase. Once Value reaches this
+    /// target the decay phase begins. This
+    /// is also the highest value for the 
+    /// ADSR envelope so it must be higher
+    /// than defaultValue and sustainTarget.
+    /// </summary>
     public double attackTarget;
+
+    /// <summary>
+    /// This is the target value for the
+    /// decay phase. Once Value reaches this
+    /// target the sustain phase begins. This
+    /// value must be higher than defaultValue 
+    /// and less than or equal to attackTarget.
+    /// </summary>
     public double sustainTarget;
+
+    /// <summary>
+    /// This is a string representation of
+    /// an excel formula. Value will increase
+    /// at the rate of this formula during
+    /// the attack phase.
+    /// </summary>
     public string attackFormula;
+
+    /// <summary>
+    /// This is a string representation of
+    /// an excel formula. Value will decrease
+    /// at the rate of this formula during
+    /// the decay phase.
+    /// </summary>
     public string decayFormula;
+
+    /// <summary>
+    /// This is a string representation of
+    /// an excel formula. Value will decrease
+    /// at the rate of this formula during
+    /// the release phase.
+    /// </summary>
     public string releaseFormula;
 
     /***************************************/
     /*              PROPERTIES             */
     /***************************************/
+
+    /// <summary>
+    /// This is the ADSR envelope state at
+    /// any point in time.
+    /// </summary>
     public ADSR_STATE State { get; private set; } = ADSR_STATE.NONE;
 
     /// <summary>
@@ -136,19 +244,50 @@ public class ADSR : MonoBehaviour {
     /// </summary>
     public double StateTime { get; private set; }
 
+    /// <summary>
+    /// Used to calculate Value during 
+    /// Attack phase. CalcEngine's custom 
+    /// type for processing excel formulas.
+    /// Converted from strings and saved to 
+    /// improve processing.
+    /// </summary>
     private Expression AttackExpression { get; set; }
+
+    /// <summary>
+    /// Used to calculate Value during 
+    /// Decay phase. CalcEngine's custom 
+    /// type for processing excel formulas.
+    /// Converted from strings and saved to 
+    /// improve processing.
+    /// </summary>
     private Expression DecayExpression { get; set; }
+
+    /// <summary>
+    /// Used to calculate Value during 
+    /// Release phase. CalcEngine's custom 
+    /// type for processing excel formulas.
+    /// Converted from strings and saved to 
+    /// improve processing.
+    /// </summary>
     private Expression ReleaseExpression { get; set; }
 
 	/***************************************/
 	/*               METHODS               */
 	/***************************************/
+
+    /// <summary>
+    /// Initialize calculation engine and calculation expressions.
+    /// </summary>
 	private void Start() {
+        // Check for errors with public inspector properties
+        CheckForValidInspectorVariables();
+
         // Initialize calculation engine
         calcEngine = new CalcEngine.CalcEngine();
         calcEngine.Variables[PARAMETER_NAME] = StateTime;
 
         // Initialize expressions
+        // Sustain does not require an expression as Value remains constant
         AttackExpression  = calcEngine.Parse(attackFormula);
         DecayExpression   = calcEngine.Parse(decayFormula);
         ReleaseExpression = calcEngine.Parse(releaseFormula);
@@ -157,51 +296,62 @@ public class ADSR : MonoBehaviour {
         Value = defaultValue;
     }
 
-    protected virtual void OnEnable() {
-		/* 
-         * =============================================================
-         * CUSTOMIZE YOUR INPUT HERE FOR TRIGGERING ATTACK AND RELEASE
-         * =============================================================
-		 * Default Behavior: This script assumes that ACTION.started is 
-		 * triggered on the first frame of input only and that
-		 * ACTION.performed is triggered when the input is released.
-         * 
-		 * SETUP WITH INPUT ACTIONS ASSET:
-         * inputActions.ACTION_MAP.ACTION_NAME.started += Attack;
-         * inputActions.ACTION_MAP.ACTION_NAME.performed += Release;
-         * inputActions.ACTION_MAP.ACTION_NAME.Enable();
-         */
+    /// <summary>
+    /// Updates the parameter if UpdateType is UPDATE.
+    /// </summary>
+	private void Update() {
+		if (UpdateType == UPDATE_TYPES.UPDATE) {
+            UpdateADSR();
+		}
+	}
 
-		inputAction.started += Attack;
-		inputAction.performed += Release;
-		inputAction.Enable();
-    }
-
-    protected virtual void OnDisable() {
-		/* 
-         * =============================================================
-         * CUSTOMIZE YOUR INPUT HERE FOR TRIGGERING ATTACK AND RELEASE
-         * =============================================================
-         * **** This should call the same functions as above, but   ****
-         * **** with -= instead of += and Disable instead of Enable ****
-         * 
-         * =============================================================
-		 * SETUP WITH INPUT ACTIONS ASSET:
-		 * =============================================================
-         * inputActions.ACTION_MAP.ACTION_NAME.started -= Attack;
-         * inputActions.ACTION_MAP.ACTION_NAME.performed -= Release;
-         * inputActions.ACTION_MAP.ACTION_NAME.Disable();
-         */
-
-		inputAction.started -= Attack;
-		inputAction.performed -= Release;
-		inputAction.Disable();
+    /// <summary>
+    /// Updates the parameter if UpdateType is LATE_UPDATE.
+    /// </summary>
+    private void LateUpdate() {
+        if (UpdateType == UPDATE_TYPES.LATE_UPDATE) {
+            UpdateADSR();
+        }
     }
 
     /// <summary>
-    /// Updates the parameter's value based on state.
+    /// Updates the parameter if UpdateType is FIXED_UPDATE.
     /// </summary>
-	private void FixedUpdate() {
+    private void FixedUpdate() {
+        if (UpdateType == UPDATE_TYPES.FIXED_UPDATE) {
+            UpdateADSR();
+        }
+    }
+
+    /// <summary>
+    /// Enables input to trigger ADSR envelope.
+    /// </summary>
+    private void OnEnable() {
+        EnableInput();
+    }
+
+    /// <summary>
+    /// Disables input to trigger ADSR envelope.
+    /// </summary>
+    private void OnDisable() {
+        DisableInput();
+    }
+
+    /// <summary>
+    /// These are the abstract methods that must be implemented when
+    /// inherited by a child. These customize the input that triggers
+    /// the ADSR envelope and handles when the parameter is updated.
+    /// </summary>
+    protected abstract void EnableInput();
+    protected abstract void DisableInput();
+
+    /// <summary>
+    /// Updates Value, StateTime, and TotalTime based on current state.
+    /// This should be called in Update/LateUpdate/FixedUpdate depending
+    /// on how your own update methods are setup and what the ADSR
+    /// variable is for.
+    /// </summary>
+    protected void UpdateADSR() {
         // Update Value based on state
         switch (State) {
             case ADSR_STATE.ATTACK:
@@ -214,8 +364,8 @@ public class ADSR : MonoBehaviour {
                 // Sustain does not require any changes to value.
                 // We literally want to keep it constant.
                 // Just update time.
-                StateTime += Time.fixedDeltaTime;
-                TotalTime += Time.fixedDeltaTime;
+                StateTime += DeltaTime();
+                TotalTime += DeltaTime();
                 break;
             case ADSR_STATE.RELEASE:
                 UpdateValue(ReleaseExpression);
@@ -225,19 +375,31 @@ public class ADSR : MonoBehaviour {
 
     /// <summary>
     /// Triggered by an input event. Changes state to Attack.
+    /// This should be triggered by input setup in EnableInput.
     /// </summary>
     /// <param name="callbackContext">The input callback context.</param>
-    private void Attack(InputAction.CallbackContext callbackContext) {
+    protected void Attack(InputAction.CallbackContext callbackContext) {
         // If for some reason Value isn't default, we switch it to default.
         ChangeToNextState(ADSR_STATE.ATTACK);
     }
 
     /// <summary>
     /// Triggered by an input event. Changes state to Attack.
+    /// This should be triggered by input setup in EnableInput.
     /// </summary>
     /// <param name="callbackContext">The input callback context.</param>
-    private void Release(InputAction.CallbackContext callbackContext) {
+    protected void Release(InputAction.CallbackContext callbackContext) {
         ChangeToNextState(ADSR_STATE.RELEASE);
+    }
+
+    /// <summary>
+    /// Halts state transitions and resets to default value.
+    /// This "cancels" the phase approach to the parameter.
+    /// This grants outside scripts some control over state, but only
+    /// setting the state back to nothing.
+    /// </summary>
+    public void StopSignal() {
+        ChangeToNextState(ADSR_STATE.NONE);
     }
 
     /// <summary>
@@ -246,8 +408,8 @@ public class ADSR : MonoBehaviour {
     /// </summary>
     /// <param name="expression">The formula to use to calculate the changes to Value.</param>
     private void UpdateValue(Expression expression) {
-        StateTime += Time.fixedDeltaTime;
-        TotalTime += Time.fixedDeltaTime;
+        StateTime += DeltaTime();
+        TotalTime += DeltaTime();
         Value += CalculateDelta(expression);
 
         // Change to the next state once we hit target value or release input.
@@ -258,11 +420,33 @@ public class ADSR : MonoBehaviour {
     }
 
     /// <summary>
+    /// This returns the correct delta time.
+    /// Each ADSR variable must have a selected update method type.
+    /// </summary>
+    /// <returns>The time since last update</returns>
+    private float DeltaTime() {
+        switch (UpdateType) {
+            case UPDATE_TYPES.UPDATE: 
+                return Time.deltaTime;
+
+            case UPDATE_TYPES.LATE_UPDATE: 
+                return Time.deltaTime;
+
+            case UPDATE_TYPES.FIXED_UPDATE:
+                return DeltaTime();
+
+            default:
+                Error("DeltaTime default occurred. UpdateType has invalid value.");
+                return 0;
+        }
+	}
+
+    /// <summary>
     /// Handles changing the state from one to another. 
     /// Checks for errors along the way and invokes callbacks.
     /// </summary>
     /// <param name="toState">The state we want to be in</param>
-    public void ChangeToNextState(ADSR_STATE toState) {
+    private void ChangeToNextState(ADSR_STATE toState) {
         // Immediately change state and reset state time
         Debug.Log("ChangeToNextState --- FromState:" + State + ", ToState:" + toState + ", TotalTime:" + TotalTime + ", StateTime:" + StateTime);
         State = toState;
@@ -308,7 +492,6 @@ public class ADSR : MonoBehaviour {
 
     /// <summary>
     /// Checks if we hit the target value for this state.
-    /// Sustain state requires another check called CheckForRelease().
     /// </summary>
     /// <returns>True if hit state's target, else false</returns>
     private bool HitStateTarget() {
@@ -375,14 +558,6 @@ public class ADSR : MonoBehaviour {
     }
 
     /// <summary>
-    /// Halts state transitions and resets to default value.
-    /// This "cancels" the phase approach to the parameter.
-    /// </summary>
-    public void StopSignal() {
-        ChangeToNextState(ADSR_STATE.NONE);
-    }
-
-    /// <summary>
     /// Uses CalcEngine to calculate an expression derived from an inspector formula.
     /// </summary>
     /// <param name="expression">The expression used to calculate.</param>
@@ -399,14 +574,43 @@ public class ADSR : MonoBehaviour {
     }
 
     /// <summary>
+    /// Runs some fixed checks to see if user error occured while setting up the Inspector variables.
+    /// </summary>
+    private void CheckForValidInspectorVariables() {
+        // Errors
+        if (attackTarget <= defaultValue) {
+            Error("attackTarget(" + attackTarget + ") is less than or equal to defaultValue(" + defaultValue + "). Increase attackTarget or decrease defaultValue.");
+        }
+        if (attackTarget < sustainTarget) {
+            Error("attackTarget(" + attackTarget + ") is less than sustainTarget(" + sustainTarget + "). Increase attackTarget or decrease sustainTarget.");
+        }
+        if (sustainTarget <= defaultValue) {
+            Error("sustainTarget(" + sustainTarget + ") is less than or equal to defaultValue(" + defaultValue + "). Increase sustainTarget or decrease defaultValue.");
+        }
+
+        // Warnings
+        if (attackTarget == sustainTarget) {
+            Warning("attackTarget(" + attackTarget + ") is equal to sustainTarget(" + sustainTarget + "). Decay phase will be skipped. This might not be intended.");
+        }
+    }
+
+    /// <summary>
     /// A simpler way to log errors in Unity.
-    /// Also halts execution.
+    /// Also halts ADSR envelope updates.
     /// </summary>
     /// <param name="error">The error text to present to the user.</param>
-    private void Error(string error) {
+    protected void Error(string error) {
         Debug.LogError(error);
         StopSignal();
     }
+
+    /// <summary>
+    /// A simpler way to log warnings in Unity.
+    /// </summary>
+    /// <param name="warning">The warning text to present to the user.</param>
+    protected void Warning(string warning) {
+        Debug.LogWarning(warning);
+	}
 
     /***************************************/
     /*              COROUTINES             */
