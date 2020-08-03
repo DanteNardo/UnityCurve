@@ -63,9 +63,10 @@ public class ADSR_Release : ADSR {
          * inputAction.performed += Release;
          * inputAction.Enable();
          */
-		inputAction.started -= Attack;
-		inputAction.performed -= Release;
-		inputAction.Disable();
+		Debug.Log("EnableInput");
+		inputAction.started += Attack;
+		inputAction.performed += Release;
+		inputAction.Enable();
 	}
 
 	protected override void DisableInput() {
@@ -84,6 +85,7 @@ public class ADSR_Release : ADSR {
          * inputAction.performed -= Release;
          * inputAction.Disable();
          */
+		Debug.Log("EnableInput");
 		inputAction.started -= Attack;
 		inputAction.performed -= Release;
 		inputAction.Disable();

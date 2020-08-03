@@ -34,17 +34,6 @@ public enum UPDATE_TYPES {
     FIXED_UPDATE = 2
 }
 
-/// <summary>
-/// Used to determine what kind of number
-/// variable we want this ADSR variable
-/// to be.
-/// </summary>
-public enum VALUE_TYPES {
-    INT = 0,
-    FLOAT = 1,
-    DOUBLE = 2
-}
-
 /*******************************************/
 /*                   CLASS                 */
 /*******************************************/
@@ -118,15 +107,6 @@ public abstract class ADSR : MonoBehaviour {
     /// recordings.
     /// </summary>
     public UPDATE_TYPES UpdateType = UPDATE_TYPES.UPDATE;
-
-    /// <summary>
-    /// This determines how Value is stored.
-    /// Value can be an int, float, or double.
-    /// NOTE: All calculations are done
-    /// with doubles and then the value
-    /// is either converted to float or int.
-    /// </summary>
-    public VALUE_TYPES ValueType = VALUE_TYPES.DOUBLE;
 
     /// <summary>
     /// Invoked on first frame of Attack state.
@@ -224,7 +204,21 @@ public abstract class ADSR : MonoBehaviour {
     /// This is the value that modulates over
     /// the four ADSR phases.
     /// </summary>
-    public double Value { get; private set; }
+    public double Value { get; set; }
+
+    /// <summary>
+    /// This is the value that modulates over
+    /// the four ADSR phases, but returned
+    /// as a float.
+    /// </summary>
+    public float ValueAsFloat { get { return (float)Value; } }
+
+    /// <summary>
+    /// This is the value that modulates over
+    /// the four ADSR phases, but returned
+    /// as a float.
+    /// </summary>
+    public float ValueAsInt { get { return (int)Value; } }
 
     /// <summary>
     /// This represents the time that has
@@ -379,7 +373,7 @@ public abstract class ADSR : MonoBehaviour {
     /// </summary>
     /// <param name="callbackContext">The input callback context.</param>
     protected void Attack(InputAction.CallbackContext callbackContext) {
-        // If for some reason Value isn't default, we switch it to default.
+        Debug.Log("Attack");
         ChangeToNextState(ADSR_STATE.ATTACK);
     }
 
@@ -389,6 +383,7 @@ public abstract class ADSR : MonoBehaviour {
     /// </summary>
     /// <param name="callbackContext">The input callback context.</param>
     protected void Release(InputAction.CallbackContext callbackContext) {
+        Debug.Log("Release");
         ChangeToNextState(ADSR_STATE.RELEASE);
     }
 
@@ -433,7 +428,7 @@ public abstract class ADSR : MonoBehaviour {
                 return Time.deltaTime;
 
             case UPDATE_TYPES.FIXED_UPDATE:
-                return DeltaTime();
+                return Time.fixedDeltaTime;
 
             default:
                 Error("DeltaTime default occurred. UpdateType has invalid value.");
