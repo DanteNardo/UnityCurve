@@ -97,6 +97,7 @@ public class ADSR : MonoBehaviour {
     public UnityEvent ADSRSustain;
     public UnityEvent ADSRRelease;
     public UnityEvent ADSREnd;
+    public UnityEvent ADSRStateChange;
 
     // Inspector variables
     public double defaultValue = 0;
@@ -104,7 +105,6 @@ public class ADSR : MonoBehaviour {
     public double sustainTarget;
     public string attackFormula;
     public string decayFormula;
-    public string sustainFormula;
     public string releaseFormula;
 
     /***************************************/
@@ -138,7 +138,6 @@ public class ADSR : MonoBehaviour {
 
     private Expression AttackExpression { get; set; }
     private Expression DecayExpression { get; set; }
-    private Expression SustainExpression { get; set; }
     private Expression ReleaseExpression { get; set; }
 
 	/***************************************/
@@ -152,7 +151,6 @@ public class ADSR : MonoBehaviour {
         // Initialize expressions
         AttackExpression  = calcEngine.Parse(attackFormula);
         DecayExpression   = calcEngine.Parse(decayFormula);
-        SustainExpression = calcEngine.Parse(sustainFormula);
         ReleaseExpression = calcEngine.Parse(releaseFormula);
 
         // Initialize Value
@@ -284,6 +282,10 @@ public class ADSR : MonoBehaviour {
         }
         // Callback functions if we don't skip the state
         else {
+            // Always invoke this callback no matter what state is changed
+            ADSRStateChange.Invoke();
+
+            // State-specific callbacks
             switch (toState) {
                 case ADSR_STATE.ATTACK:
                     ADSRAttack.Invoke();

@@ -64,8 +64,6 @@ public class ADSRGraph : MonoBehaviour {
 
 		// Update X and Y Axis Lines based on transform
 		InitializeXAndYAxis();
-
-		// Add target to camera
 	}
 
 	private void FixedUpdate() {
@@ -137,6 +135,23 @@ public class ADSRGraph : MonoBehaviour {
 				ReleaseLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
 				releaseDurationText.text = y.StateTime.ToString("0.##") + "s";
 				releaseTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
+				break;
+		}
+	}
+
+	public void ConnectLines() {
+		switch (y.State) {
+			case ADSR_STATE.DECAY:
+				AttackLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
+				break;
+			case ADSR_STATE.SUSTAIN:
+				DecayLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
+				break;
+			case ADSR_STATE.RELEASE:
+				SustainLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
+				break;
+			case ADSR_STATE.NONE:
+				ReleaseLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
 				break;
 		}
 	}
