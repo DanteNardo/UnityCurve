@@ -17,11 +17,11 @@ using UnityEngine.InputSystem;
 /// phase this variable is currently in.
 /// </summary>
 public enum ADSR_STATE {
+    NONE,
     ATTACK,
     DECAY,
     SUSTAIN,
-    RELEASE,
-    NONE
+    RELEASE
 }
 
 /// <summary>
@@ -272,7 +272,7 @@ public abstract class ADSR : MonoBehaviour {
     /// <summary>
     /// Initialize calculation engine and calculation expressions.
     /// </summary>
-	private void Start() {
+	private void Awake() {
         // Check for errors with public inspector properties
         CheckForValidInspectorVariables();
 
@@ -373,7 +373,6 @@ public abstract class ADSR : MonoBehaviour {
     /// </summary>
     /// <param name="callbackContext">The input callback context.</param>
     protected void Attack(InputAction.CallbackContext callbackContext) {
-        Debug.Log("Attack");
         ChangeToNextState(ADSR_STATE.ATTACK);
     }
 
@@ -383,7 +382,6 @@ public abstract class ADSR : MonoBehaviour {
     /// </summary>
     /// <param name="callbackContext">The input callback context.</param>
     protected void Release(InputAction.CallbackContext callbackContext) {
-        Debug.Log("Release");
         ChangeToNextState(ADSR_STATE.RELEASE);
     }
 
@@ -395,6 +393,51 @@ public abstract class ADSR : MonoBehaviour {
     /// </summary>
     public void StopSignal() {
         ChangeToNextState(ADSR_STATE.NONE);
+    }
+
+    /// <summary>
+    /// This function simulates and stores the ADSR envelope.
+    /// Every Value and corresponding timestamp is saved in an ADSRGraphLine
+    /// object as we quickly run through all of the frames necessary to
+    /// compute Value.
+    /// </summary>
+    /// <param name="sustainTime">This simulates how long the input is held down for before it is released.</param>
+    /// <returns>Every Value/TimeStamp pair that occurs in the envelope in a line format.</returns>
+    public ADSRGraphLine Simulate(float sustainTime) {
+        // Prepare simulated line and start attack
+        ADSRGraphLine simulatedLine = new ADSRGraphLine();
+        ChangeToNextState(ADSR_STATE.ATTACK, false);
+
+        /*
+         * State will always equal ATTACK at the start of this while loop.
+         * The ADSR envelope will continue to transition to decay and on
+         * to sustain and so on until the envelope finishes release.
+         * Value, StateTime, and TotalTime will be saved as this occurs
+         * and returned to the caller in a line format.
+         */
+        while (State != ADSR_STATE.NONE) {
+            /* 
+             * Update Value, StateTime, and TotalTime.
+             * This also takes care of all state transitions (except for
+             * the sustain -> release transition) and saves the Value at
+             * this point in time in the simulated line.
+             */
+            UpdateADSR();
+            simulatedLine.Add(new ADSRGraphPoint(State, Value, TotalTime));
+
+            /* 
+             * UpdateADSR automatically handles most state transitions,
+             * but SUSTAIN normally ends once an input is released. This
+             * simulate function "releases" once sustain has occurred for
+             * an amount of time determined by the function call parameter.
+             */
+            if (State == ADSR_STATE.SUSTAIN && StateTime >= sustainTime) {
+                ChangeToNextState(ADSR_STATE.RELEASE, false);
+			}
+        }
+
+        // Return all of the Values and timestamps for this ADSR envelope in a line format
+        return simulatedLine;
     }
 
     /// <summary>
@@ -441,7 +484,8 @@ public abstract class ADSR : MonoBehaviour {
     /// Checks for errors along the way and invokes callbacks.
     /// </summary>
     /// <param name="toState">The state we want to be in</param>
-    private void ChangeToNextState(ADSR_STATE toState) {
+    /// <param name="triggerCallbacks">An optional parameter that invokes UnityEvents if callbacks are enabled. Default true.</param>
+    private void ChangeToNextState(ADSR_STATE toState, bool triggerCallbacks = true) {
         // Immediately change state and reset state time
         Debug.Log("ChangeToNextState --- FromState:" + State + ", ToState:" + toState + ", TotalTime:" + TotalTime + ", StateTime:" + StateTime);
         State = toState;
@@ -456,11 +500,11 @@ public abstract class ADSR : MonoBehaviour {
         // This is used if we want no decay and have hit decayTarget
         // CANNOT SKIP THE SUSTAIN STATE
         if (State != ADSR_STATE.SUSTAIN && HitStateTarget()) {
-            ChangeToNextState(GetNextState());
+            ChangeToNextState(GetNextState(), triggerCallbacks);
             return;
         }
         // Callback functions if we don't skip the state
-        else {
+        else if (triggerCallbacks) {
             // Always invoke this callback no matter what state is changed
             ADSRStateChange.Invoke();
 

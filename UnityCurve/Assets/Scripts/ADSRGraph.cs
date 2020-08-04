@@ -14,14 +14,19 @@ public class ADSRGraph : MonoBehaviour {
 	/***************************************/
 	/*               MEMBERS               */
 	/***************************************/
+	public bool realtime = true;
+	public float simulationSustainTime = 0.5f;
+	public ADSR y;
 	public MultiTargetCamera multiTargetCamera;
 	public LineRenderer xAxisRenderer;
 	public LineRenderer yAxisRenderer;
-	public LineRenderer attackRenderer;
-	public LineRenderer decayRenderer;
-	public LineRenderer sustainRenderer;
-	public LineRenderer releaseRenderer;
-	public ADSR y;
+	public LineRenderer lineRenderer;
+
+	public Color attackColor;
+	public Color decayColor;
+	public Color sustainColor;
+	public Color releaseColor;
+
 	public TextMesh attackDurationText;
 	public TextMesh decayDurationText;
 	public TextMesh sustainDurationText;
@@ -34,10 +39,15 @@ public class ADSRGraph : MonoBehaviour {
 	/***************************************/
 	/*              PROPERTIES             */
 	/***************************************/
-	private ADSRGraphLine AttackLine { get; set; }
-	private ADSRGraphLine DecayLine { get; set; }
-	private ADSRGraphLine SustainLine { get; set; }
-	private ADSRGraphLine ReleaseLine { get; set; }
+	private ADSRGraphLine Line { get; set; }
+	private int AttackStart = 0;
+	private int AttackEnd = -1;
+	private int DecayStart = -1;
+	private int DecayEnd = -1;
+	private int SustainStart = -1;
+	private int SustainEnd = -1;
+	private int ReleaseStart = -1;
+	private int ReleaseEnd = -1;
 	private float MaxYHeight { get; set; }
 
 	/***************************************/
@@ -45,16 +55,8 @@ public class ADSRGraph : MonoBehaviour {
 	/***************************************/
 	private void Start() {
 		// Instantiate new graph line variables
-		AttackLine = new ADSRGraphLine();
-		DecayLine = new ADSRGraphLine();
-		SustainLine = new ADSRGraphLine();
-		ReleaseLine = new ADSRGraphLine();
-
-		// Initialize line events
-		AttackLine.OnLineChange += UpdateRenderers;
-		DecayLine.OnLineChange += UpdateRenderers;
-		SustainLine.OnLineChange += UpdateRenderers;
-		ReleaseLine.OnLineChange += UpdateRenderers;
+		Line = new ADSRGraphLine();
+		Line.OnLineChange += UpdateRenderer;
 
 		// Clear and set all data to empty
 		Clear();
@@ -64,10 +66,19 @@ public class ADSRGraph : MonoBehaviour {
 
 		// Update X and Y Axis Lines based on transform
 		InitializeXAndYAxis();
+
+		// If this is a static graph, set all data now
+		if (realtime == false) {
+			Line = y.Simulate(simulationSustainTime);
+			UpdateLineColorIndices();
+			UpdateRenderer();
+		}
 	}
 
 	private void FixedUpdate() {
-		AddPoint();
+		if (realtime) {
+			AddPoint();
+		}
 	}
 
 	private void InitializeXAndYAxis() {
@@ -98,10 +109,7 @@ public class ADSRGraph : MonoBehaviour {
 
 	public void Clear() {
 		// Clear line data
-		AttackLine.Clear();
-		DecayLine.Clear();
-		SustainLine.Clear();
-		ReleaseLine.Clear();
+		Line.Clear();
 
 		// Clear text data
 		attackDurationText.text = "";
@@ -117,82 +125,41 @@ public class ADSRGraph : MonoBehaviour {
 	public void AddPoint() {
 		switch (y.State) {
 			case ADSR_STATE.ATTACK:
-				AttackLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
+				Line.Add(new ADSRGraphPoint(y.State, y.Value, y.TotalTime));
 				attackDurationText.text = y.StateTime.ToString("0.##") + "s";
 				attackTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.DECAY:
-				DecayLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
+				Line.Add(new ADSRGraphPoint(y.State, y.Value, y.TotalTime));
 				decayDurationText.text = y.StateTime.ToString("0.##") + "s";
 				decayTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.SUSTAIN:
-				SustainLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
+				Line.Add(new ADSRGraphPoint(y.State, y.Value, y.TotalTime));
 				sustainDurationText.text = y.StateTime.ToString("0.##") + "s";
 				sustainTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.RELEASE:
-				ReleaseLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
+				Line.Add(new ADSRGraphPoint(y.State, y.Value, y.TotalTime));
 				releaseDurationText.text = y.StateTime.ToString("0.##") + "s";
 				releaseTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 		}
+
+		// A new point means we might need to update the color indices
+		UpdateLineColorIndices();
 	}
 
-	public void ConnectLines() {
-		switch (y.State) {
-			case ADSR_STATE.DECAY:
-				AttackLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
-				break;
-			case ADSR_STATE.SUSTAIN:
-				DecayLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
-				break;
-			case ADSR_STATE.RELEASE:
-				SustainLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
-				break;
-			case ADSR_STATE.NONE:
-				ReleaseLine.Add(new ADSRGraphPoint(y.TotalTime, y.Value));
-				break;
-		}
-	}
-
-	private void UpdateRenderers() {
-		// Keep track of starting x position
-		float startX = 0;
-
-		// Update attack line and increment positionCount
-		UpdateRenderer(attackRenderer, AttackLine, 0);
-		startX += attackRenderer.positionCount;
-
-		// Update decay line and increment positionCount
-		UpdateRenderer(decayRenderer, DecayLine, startX);
-		startX += decayRenderer.positionCount;
-
-		// Update sustain line and increment positionCount
-		UpdateRenderer(sustainRenderer, SustainLine, startX);
-		startX += sustainRenderer.positionCount;
-
-		// Update release line
-		UpdateRenderer(releaseRenderer, ReleaseLine, startX);
-	}
-
-	private void UpdateRenderer(LineRenderer lineRenderer, ADSRGraphLine line, float startX) {
-		float totalPoints =
-			attackRenderer.positionCount +
-			decayRenderer.positionCount +
-			sustainRenderer.positionCount +
-			releaseRenderer.positionCount;
-		Vector3[] renderPoints = GetGraphPoints(line, totalPoints, startX);
+	private void UpdateRenderer() {
+		Vector3[] renderPoints = GetGraphPoints();
 		lineRenderer.positionCount = renderPoints.Length;
 		lineRenderer.SetPositions(renderPoints);
+		lineRenderer.colorGradient = GetColorGradient();
 	}
 
-	private Vector3[] GetGraphPoints(ADSRGraphLine line, float totalPoints, float startX) {
+	private Vector3[] GetGraphPoints() {
 		// Create graph points object
-		Vector3[] graphPoints = new Vector3[line.Points.Count];
-
-		// Create normalization multiplier (default value is 1)
-		float xNormalizer = totalPoints == 0 ? 1.0f : 1.0f / totalPoints;
+		Vector3[] graphPoints = new Vector3[Line.Points.Count];
 
 		// Generate graph points based on time and value and then normalize them.
 		// - Adjust each point's x value based on previous lines in the graph
@@ -200,8 +167,8 @@ public class ADSRGraph : MonoBehaviour {
 		// - Normalize y values by subtracting default value and dividing by maxY
 		for (int i = 0; i < graphPoints.Length; i++) {
 			graphPoints[i] = new Vector3(
-				(startX + i) * xNormalizer,
-				(float)(line.Points[i].Value - y.defaultValue) / MaxYHeight,
+				NormalizeIndex(i),
+				(float)(Line.Points[i].Value - y.defaultValue) / MaxYHeight,
 				0
 			);
 		}
@@ -213,6 +180,95 @@ public class ADSRGraph : MonoBehaviour {
 		return graphPoints;
 	}
 
+	private Gradient GetColorGradient() {
+		// Initialize gradient
+		Gradient gradient = new Gradient();
+
+		// Count how many gradient keys need to exist based on saved indices
+		int keyCount = 0;
+		keyCount = AttackStart  == -1 ? keyCount : keyCount + 1;
+		keyCount = AttackEnd    == -1 ? keyCount : keyCount + 1;
+		keyCount = DecayStart   == -1 ? keyCount : keyCount + 1;
+		keyCount = DecayEnd     == -1 ? keyCount : keyCount + 1;
+		keyCount = SustainStart == -1 ? keyCount : keyCount + 1;
+		keyCount = SustainEnd   == -1 ? keyCount : keyCount + 1;
+		keyCount = ReleaseStart == -1 ? keyCount : keyCount + 1;
+		keyCount = ReleaseEnd   == -1 ? keyCount : keyCount + 1;
+
+		// Create gradient key arrays
+		GradientColorKey[] colorKeys = new GradientColorKey[keyCount];
+		GradientAlphaKey[] alphaKeys = new GradientAlphaKey[keyCount];
+		for (int i = 0; i < keyCount; i++) {
+			switch (i) {
+				case 0:
+					colorKeys[i] = new GradientColorKey(attackColor, NormalizeIndex(AttackStart));
+					alphaKeys[i] = new GradientAlphaKey(attackColor.a, NormalizeIndex(AttackStart));
+					break;
+				case 1:
+					colorKeys[i] = new GradientColorKey(attackColor, NormalizeIndex(AttackEnd));
+					alphaKeys[i] = new GradientAlphaKey(attackColor.a, NormalizeIndex(AttackEnd));
+					break;
+				case 2:
+					colorKeys[i] = new GradientColorKey(decayColor, NormalizeIndex(DecayStart));
+					alphaKeys[i] = new GradientAlphaKey(decayColor.a, NormalizeIndex(DecayStart));
+					break;
+				case 3:
+					colorKeys[i] = new GradientColorKey(decayColor, NormalizeIndex(DecayEnd));
+					alphaKeys[i] = new GradientAlphaKey(decayColor.a, NormalizeIndex(DecayEnd));
+					break;
+				case 4:
+					colorKeys[i] = new GradientColorKey(sustainColor, NormalizeIndex(SustainStart));
+					alphaKeys[i] = new GradientAlphaKey(sustainColor.a, NormalizeIndex(SustainStart));
+					break;
+				case 5:
+					colorKeys[i] = new GradientColorKey(sustainColor, NormalizeIndex(SustainEnd));
+					alphaKeys[i] = new GradientAlphaKey(sustainColor.a, NormalizeIndex(SustainEnd));
+					break;
+				case 6:
+					colorKeys[i] = new GradientColorKey(releaseColor, NormalizeIndex(ReleaseStart));
+					alphaKeys[i] = new GradientAlphaKey(releaseColor.a, NormalizeIndex(ReleaseStart));
+					break;
+				case 7:
+					colorKeys[i] = new GradientColorKey(releaseColor, NormalizeIndex(ReleaseEnd));
+					alphaKeys[i] = new GradientAlphaKey(releaseColor.a, NormalizeIndex(ReleaseEnd));
+					break;
+			}
+		}
+
+		// Set gradient data and return
+		gradient.SetKeys(colorKeys, alphaKeys);
+		return gradient;
+	}
+
+	private void UpdateLineColorIndices() {
+		// Iterate and create GradientKeys when state changes
+		ADSR_STATE lastState = ADSR_STATE.NONE;
+		for (int i = 0; i < Line.Points.Count; i++) {
+			if (Line.Points[i].State != lastState) {
+				switch (Line.Points[i].State) {
+					case ADSR_STATE.DECAY:
+						AttackEnd = i - 1;
+						DecayStart = i;
+						break;
+					case ADSR_STATE.SUSTAIN:
+						DecayEnd = i - 1;
+						SustainStart = i;
+						break;
+					case ADSR_STATE.RELEASE:
+						SustainEnd = i - 1;
+						ReleaseStart = i;
+						break;
+					case ADSR_STATE.NONE:
+						ReleaseEnd = i;
+						break;
+				}
+			}
+
+			// Update last state
+			lastState = Line.Points[i].State;
+		}
+	}
+
 	private void TransformPoints(ref Vector3[] points) {
 		for (int j = 0; j < points.Length; j++) {
 			points[j] = new Vector3(
@@ -221,6 +277,11 @@ public class ADSRGraph : MonoBehaviour {
 				(points[j].z * transform.localScale.z) + transform.position.z
 			);
 		}
+	}
+
+	private float NormalizeIndex(int index) {
+		if (Line.Points.Count == 0) return index;
+		return (1.0f / Line.Points.Count) * index;
 	}
 
 	/***************************************/
@@ -272,19 +333,22 @@ public struct ADSRGraphPoint {
 	/***************************************/
 	/*              PROPERTIES             */
 	/***************************************/
-	public float TotalTime { get; private set; }
+	public ADSR_STATE State { get; private set; }
 	public float Value { get; private set; }
+	public float TotalTime { get; private set; }
 
 	/***************************************/
 	/*               METHODS               */
 	/***************************************/
-	public ADSRGraphPoint(double timestamp, double value) {
-		TotalTime = (float)timestamp;
+	public ADSRGraphPoint(ADSR_STATE state, double value, double timestamp) {
+		State = state;
 		Value = (float)value;
+		TotalTime = (float)timestamp;
 	}
 
-	public ADSRGraphPoint(float timestamp, float value) {
-		TotalTime = timestamp;
+	public ADSRGraphPoint(ADSR_STATE state, float value, float timestamp) {
+		State = state;
 		Value = value;
+		TotalTime = timestamp;
 	}
 }
