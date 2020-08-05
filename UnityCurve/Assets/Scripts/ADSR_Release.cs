@@ -63,7 +63,6 @@ public class ADSR_Release : ADSR {
          * inputAction.performed += Release;
          * inputAction.Enable();
          */
-		Debug.Log("EnableInput");
 		inputAction.started += Attack;
 		inputAction.performed += Release;
 		inputAction.Enable();
@@ -85,7 +84,6 @@ public class ADSR_Release : ADSR {
          * inputAction.performed -= Release;
          * inputAction.Disable();
          */
-		Debug.Log("EnableInput");
 		inputAction.started -= Attack;
 		inputAction.performed -= Release;
 		inputAction.Disable();

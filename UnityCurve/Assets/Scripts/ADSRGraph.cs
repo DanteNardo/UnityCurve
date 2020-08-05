@@ -72,6 +72,14 @@ public class ADSRGraph : MonoBehaviour {
 			Line = y.Simulate(simulationSustainTime);
 			UpdateLineColorIndices();
 			UpdateRenderer();
+			Debug.Log("AttackStart:" + AttackStart);
+			Debug.Log("AttackEnd:" + AttackEnd);
+			Debug.Log("DecayStart:" + DecayStart);
+			Debug.Log("DecayEnd:" + DecayEnd);
+			Debug.Log("SustainStart:" + SustainStart);
+			Debug.Log("SustainEnd:" + SustainEnd);
+			Debug.Log("ReleaseStart:" + ReleaseStart);
+			Debug.Log("ReleaseEnd:" + ReleaseEnd);
 		}
 	}
 
@@ -120,6 +128,16 @@ public class ADSRGraph : MonoBehaviour {
 		decayTotalTimeText.text = "";
 		sustainTotalTimeText.text = "";
 		releaseTotalTimeText.text = "";
+
+		// Clear color indices
+		AttackStart = 0;
+		AttackEnd = -1;
+		DecayStart = -1;
+		DecayEnd = -1;
+		SustainStart = -1;
+		SustainEnd = -1;
+		ReleaseStart = -1;
+		ReleaseEnd = -1;
 }
 
 	public void AddPoint() {
