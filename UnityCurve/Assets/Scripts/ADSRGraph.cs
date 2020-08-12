@@ -72,14 +72,6 @@ public class ADSRGraph : MonoBehaviour {
 			Line = y.Simulate(simulationSustainTime);
 			UpdateLineColorIndices();
 			UpdateRenderer();
-			Debug.Log("AttackStart:" + AttackStart);
-			Debug.Log("AttackEnd:" + AttackEnd);
-			Debug.Log("DecayStart:" + DecayStart);
-			Debug.Log("DecayEnd:" + DecayEnd);
-			Debug.Log("SustainStart:" + SustainStart);
-			Debug.Log("SustainEnd:" + SustainEnd);
-			Debug.Log("ReleaseStart:" + ReleaseStart);
-			Debug.Log("ReleaseEnd:" + ReleaseEnd);
 		}
 	}
 
@@ -255,6 +247,26 @@ public class ADSRGraph : MonoBehaviour {
 
 		// Set gradient data and return
 		gradient.SetKeys(colorKeys, alphaKeys);
+		gradient.mode = GradientMode.Fixed;
+
+		// FOR DEBUGGING: TODO REMOVE
+		// FOR DEBUGGING: TODO REMOVE
+		// FOR DEBUGGING: TODO REMOVE
+		Debug.Log("AttackStart:" + AttackStart);
+		Debug.Log("AttackEnd:" + AttackEnd);
+		Debug.Log("DecayStart:" + DecayStart);
+		Debug.Log("DecayEnd:" + DecayEnd);
+		Debug.Log("SustainStart:" + SustainStart);
+		Debug.Log("SustainEnd:" + SustainEnd);
+		Debug.Log("ReleaseStart:" + ReleaseStart);
+		Debug.Log("ReleaseEnd:" + ReleaseEnd);
+		for (int i = 0; i < gradient.colorKeys.Length; i++) {
+			Debug.Log("Gradient[" + i + "] Color:{" + gradient.colorKeys[i].color + "," + gradient.colorKeys[i].time + "}");
+		}
+		// FOR DEBUGGING: TODO REMOVE
+		// FOR DEBUGGING: TODO REMOVE
+		// FOR DEBUGGING: TODO REMOVE
+
 		return gradient;
 	}
 
