@@ -173,16 +173,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.4234619, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   referenceGrid: {fileID: 337500649}
-  points:
-  - {x: 0, y: 0}
-  - {x: 1, y: 1}
-  - {x: 3, y: 2}
-  - {x: 6, y: 3}
-  - {x: 15, y: 4}
+  points: []
   thickness: 4.44
 --- !u!222 &21838658
 CanvasRenderer:
