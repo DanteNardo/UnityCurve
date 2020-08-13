@@ -6,6 +6,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 /*******************************************/
 /*                   CLASS                 */
@@ -18,6 +19,7 @@ public class ADSRGraph : MonoBehaviour {
 	public bool realtime = true;
 	public float simulationSustainTime = 0.5f;
 	public ADSR y;
+	public UIGridRenderer gridRenderer;
 	public UILineRenderer lineRenderer;
 
 	public Color attackColor;
@@ -25,14 +27,14 @@ public class ADSRGraph : MonoBehaviour {
 	public Color sustainColor;
 	public Color releaseColor;
 
-	public Text attackDurationText;
-	public Text decayDurationText;
-	public Text sustainDurationText;
-	public Text releaseDurationText;
-	public Text attackTotalTimeText;
-	public Text decayTotalTimeText;
-	public Text sustainTotalTimeText;
-	public Text releaseTotalTimeText;
+	public TMP_Text attackDurationText;
+	public TMP_Text decayDurationText;
+	public TMP_Text sustainDurationText;
+	public TMP_Text releaseDurationText;
+	public TMP_Text attackTotalTimeText;
+	public TMP_Text decayTotalTimeText;
+	public TMP_Text sustainTotalTimeText;
+	public TMP_Text releaseTotalTimeText;
 
 	/***************************************/
 	/*              PROPERTIES             */
@@ -58,7 +60,7 @@ public class ADSRGraph : MonoBehaviour {
 		// If this is a static graph, set all data now
 		if (realtime == false) {
 			Line = y.Simulate(simulationSustainTime);
-
+			StaticTimeAnalysis();
 			UpdateColorPoints();
 			UpdateRenderer();
 		}
@@ -90,25 +92,48 @@ public class ADSRGraph : MonoBehaviour {
 	public void AddPoint() {
 		switch (y.State) {
 			case ADSR_STATE.ATTACK:
-				Line.Add(new ADSRGraphPoint(y.State, y.Value, y.TotalTime));
+				Line.Add(new ADSRGraphPoint(y.State, y.Value, y.TotalTime, y.StateTime));
 				attackDurationText.text = y.StateTime.ToString("0.##") + "s";
 				attackTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.DECAY:
-				Line.Add(new ADSRGraphPoint(y.State, y.Value, y.TotalTime));
+				Line.Add(new ADSRGraphPoint(y.State, y.Value, y.TotalTime, y.StateTime));
 				decayDurationText.text = y.StateTime.ToString("0.##") + "s";
 				decayTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.SUSTAIN:
-				Line.Add(new ADSRGraphPoint(y.State, y.Value, y.TotalTime));
+				Line.Add(new ADSRGraphPoint(y.State, y.Value, y.TotalTime, y.StateTime));
 				sustainDurationText.text = y.StateTime.ToString("0.##") + "s";
 				sustainTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.RELEASE:
-				Line.Add(new ADSRGraphPoint(y.State, y.Value, y.TotalTime));
 				releaseDurationText.text = y.StateTime.ToString("0.##") + "s";
 				releaseTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
+		}
+	}
+	
+	private void StaticTimeAnalysis() {
+		// Set up last state variable to detect transitions and update statetime.
+		foreach (var point in Line.Points) {
+			switch (point.State) {
+				case ADSR_STATE.ATTACK:
+					attackDurationText.text = point.StateTime.ToString("0.##") + "s";
+					attackTotalTimeText.text = point.TotalTime.ToString("0.##") + "s";
+					break;
+				case ADSR_STATE.DECAY:
+					decayDurationText.text = point.StateTime.ToString("0.##") + "s";
+					decayTotalTimeText.text = point.TotalTime.ToString("0.##") + "s";
+					break;
+				case ADSR_STATE.SUSTAIN:
+					sustainDurationText.text = point.StateTime.ToString("0.##") + "s";
+					sustainTotalTimeText.text = point.TotalTime.ToString("0.##") + "s";
+					break;
+				case ADSR_STATE.RELEASE:
+					releaseDurationText.text = point.StateTime.ToString("0.##") + "s";
+					releaseTotalTimeText.text = point.TotalTime.ToString("0.##") + "s";
+					break;
+			}
 		}
 	}
 
@@ -166,12 +191,12 @@ public class ADSRGraph : MonoBehaviour {
 	}
 
 	private float NormalizeX(int x) {
-		if (Line.Points.Count == 0) return x * 15;
-		return (1.0f / Line.Points.Count) * x * 15;
+		if (Line.Points.Count == 0) return x * gridRenderer.gridSize.x;
+		return (1.0f / Line.Points.Count) * x * gridRenderer.gridSize.x;
 	}
 
 	private float NormalizeY(float y) {
-		return (float)(y - this.y.defaultValue) / MaxYHeight * 10;
+		return (float)(y - this.y.defaultValue) / MaxYHeight * gridRenderer.gridSize.y;
 	}
 
 	/***************************************/
@@ -226,19 +251,22 @@ public struct ADSRGraphPoint {
 	public ADSR_STATE State { get; private set; }
 	public float Value { get; private set; }
 	public float TotalTime { get; private set; }
+	public float StateTime { get; private set; }
 
 	/***************************************/
 	/*               METHODS               */
 	/***************************************/
-	public ADSRGraphPoint(ADSR_STATE state, double value, double timestamp) {
+	public ADSRGraphPoint(ADSR_STATE state, double value, double totalTime, double stateTime) {
 		State = state;
 		Value = (float)value;
-		TotalTime = (float)timestamp;
+		TotalTime = (float)totalTime;
+		StateTime = (float)stateTime;
 	}
 
-	public ADSRGraphPoint(ADSR_STATE state, float value, float timestamp) {
+	public ADSRGraphPoint(ADSR_STATE state, float value, float totalTime, float stateTime) {
 		State = state;
 		Value = value;
-		TotalTime = timestamp;
+		TotalTime = totalTime;
+		StateTime = (float)stateTime;
 	}
 }

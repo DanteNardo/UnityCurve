@@ -423,7 +423,7 @@ public abstract class ADSR : MonoBehaviour {
              * this point in time in the simulated line.
              */
             UpdateADSR();
-            simulatedLine.Add(new ADSRGraphPoint(State, Value, TotalTime));
+            simulatedLine.Add(new ADSRGraphPoint(State, Value, TotalTime, StateTime));
 
             /* 
              * UpdateADSR automatically handles most state transitions,
