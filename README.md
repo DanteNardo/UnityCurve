@@ -30,7 +30,7 @@
 <br />
 <p align="center">
   <a href="https://github.com/DanteNardo/UnityCurve">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="resources/ADSR Envelopes.png" alt="Logo" width="80" height="80">
   </a>
 
   <h3 align="center">UnityCurve</h3>
@@ -112,14 +112,6 @@ I plan on creating releases of an actual unitypackage once I hit a releaseable s
 1. Clone the repo
 ```sh
 git clone https://github.com/DanteNardo/UnityCurve.git
-```
-2. Install NPM packages
-```sh
-npm install
-```
-3. Enter your API in `config.js`
-```JS
-const API_KEY = 'ENTER YOUR API';
 ```
 
 
