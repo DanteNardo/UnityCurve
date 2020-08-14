@@ -29,6 +29,10 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
+  
+  <a href="https://github.com/DanteNardo/UnityCurve" align="center">
+      <img src="resources/ADSR Envelopes.png" alt="Logo" width="600">
+  </a>
 
   <h3 align="center">UnityCurve</h3>
 
@@ -44,10 +48,6 @@
     ·
     <a href="https://github.com/DanteNardo/UnityCurve/issues">Request Feature</a>
   </p>
-  
-  <a href="https://github.com/DanteNardo/UnityCurve">
-    <img src="resources/ADSR Envelopes.png" alt="Logo" width="600">
-  </a>
 </p>
 
 
