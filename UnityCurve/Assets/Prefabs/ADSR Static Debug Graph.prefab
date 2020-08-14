@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7001691851768874339}
   - component: {fileID: 2442670388868460786}
   m_Layer: 0
-  m_Name: ADSR Graph
+  m_Name: ADSRGraph
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1811,11 +1811,6 @@ MonoBehaviour:
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   referenceGrid: {fileID: 6616934646517093570}
-  points:
-  - {x: 0, y: 0}
-  - {x: 5.5, y: 5.5}
-  - {x: 6.9, y: 6.9}
-  - {x: 12, y: 4}
   thickness: 4.44
 --- !u!1 &6616934646891739072
 GameObject:

@@ -53,7 +53,6 @@ public class UILineRenderer : Graphic {
 	/// </summary>
 	/// <param name="vh">The vertexhelper utility for UI Graphic classes</param>
 	protected override void OnPopulateMesh(VertexHelper vh) {
-		Debug.Log("OnPopulateMesh: 1");
 		vh.Clear();
 
 		// Prepare important variables for line sizing
@@ -67,7 +66,6 @@ public class UILineRenderer : Graphic {
 		if (Line.Points.Count < 2) {
 			return;
 		}
-		Debug.Log("OnPopulateMesh: 2");
 
 		// Create vertices for every point in the line
 		for (int i = 0; i < Line.Points.Count; i++) {
@@ -76,7 +74,6 @@ public class UILineRenderer : Graphic {
 			}
 			DrawVerticesForPoint(Line.Points[i], i, vh, Angle);
 		}
-		Debug.Log("OnPopulateMesh: 3");
 
 		// Create triangles from the line vertices
 		for (int j = 0; j < Line.Points.Count-1; j++) {
@@ -84,7 +81,6 @@ public class UILineRenderer : Graphic {
 			vh.AddTriangle(index + 0, index + 1, index + 3);
 			vh.AddTriangle(index + 3, index + 2, index + 0);
 		}
-		Debug.Log("OnPopulateMesh: 4");
 	}
 
 	/// <summary>
@@ -162,51 +158,6 @@ public class UILineRenderer : Graphic {
 	/***************************************/
 	/*              COROUTINES             */
 	/***************************************/
-}
-
-
-/*******************************************/
-/*                    CLASS                */
-/*******************************************/
-public class UILine {
-
-	/***************************************/
-	/*               MEMBERS               */
-	/***************************************/
-	public delegate void OnLineChangeDelegate();
-	public event OnLineChangeDelegate OnLineChange;
-
-	/***************************************/
-	/*              PROPERTIES             */
-	/***************************************/
-	public List<Vector2> Points { get; private set; }
-
-	/***************************************/
-	/*               METHODS               */
-	/***************************************/
-	public UILine() {
-		Points = new List<Vector2>();
-	}
-
-	public void SetEqual(List<Vector2> points) {
-		Points = points;
-		OnLineChange?.Invoke();
-	}
-
-	public void AddRange(List<Vector2> points) {
-		Points.AddRange(points);
-		OnLineChange?.Invoke();
-	}
-
-	public void Add(Vector2 point) {
-		Points.Add(point);
-		OnLineChange?.Invoke();
-	}
-
-	public void Clear() {
-		Points.Clear();
-		OnLineChange?.Invoke();
-	}
 }
 
 

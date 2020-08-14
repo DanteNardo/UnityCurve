@@ -264,7 +264,7 @@ GameObject:
   - component: {fileID: 448711093}
   - component: {fileID: 448711092}
   m_Layer: 0
-  m_Name: ADSR Demo
+  m_Name: ADSR Release Demo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
