@@ -5,7 +5,6 @@
 /*******************************************/
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 
 /*******************************************/
@@ -39,7 +38,7 @@ public class ADSRGraph : MonoBehaviour {
 	/***************************************/
 	/*              PROPERTIES             */
 	/***************************************/
-	private ADSRGraphLine Line { get; set; }
+	private ADSRLine Line { get; set; }
 	private float MaxYHeight { get; set; }
 
 	/***************************************/
@@ -47,7 +46,7 @@ public class ADSRGraph : MonoBehaviour {
 	/***************************************/
 	private void Start() {
 		// Instantiate new graph line variables
-		Line = new ADSRGraphLine();
+		Line = new ADSRLine();
 		Line.OnLineChange += UpdateColorPoints;
 		Line.OnLineChange += UpdateRenderer;
 
@@ -75,7 +74,7 @@ public class ADSRGraph : MonoBehaviour {
 	public void Clear() {
 		// Clear line data
 		Line.Clear();
-		lineRenderer.points.Clear();
+		lineRenderer.Line.Clear();
 		lineRenderer.ColorPoints.Clear();
 
 		// Clear text data
@@ -92,21 +91,22 @@ public class ADSRGraph : MonoBehaviour {
 	public void AddPoint() {
 		switch (y.State) {
 			case ADSR_STATE.ATTACK:
-				Line.Add(new ADSRGraphPoint(y.State, y.Value, y.TotalTime, y.StateTime));
+				Line.Add(new ADSRPoint(y.State, y.Value, y.TotalTime, y.StateTime));
 				attackDurationText.text = y.StateTime.ToString("0.##") + "s";
 				attackTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.DECAY:
-				Line.Add(new ADSRGraphPoint(y.State, y.Value, y.TotalTime, y.StateTime));
+				Line.Add(new ADSRPoint(y.State, y.Value, y.TotalTime, y.StateTime));
 				decayDurationText.text = y.StateTime.ToString("0.##") + "s";
 				decayTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.SUSTAIN:
-				Line.Add(new ADSRGraphPoint(y.State, y.Value, y.TotalTime, y.StateTime));
+				Line.Add(new ADSRPoint(y.State, y.Value, y.TotalTime, y.StateTime));
 				sustainDurationText.text = y.StateTime.ToString("0.##") + "s";
 				sustainTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.RELEASE:
+				Line.Add(new ADSRPoint(y.State, y.Value, y.TotalTime, y.StateTime));
 				releaseDurationText.text = y.StateTime.ToString("0.##") + "s";
 				releaseTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
@@ -138,7 +138,7 @@ public class ADSRGraph : MonoBehaviour {
 	}
 
 	private void UpdateRenderer() {
-		lineRenderer.points = GetGraphPoints();
+		lineRenderer.Line.SetEqual(GetGraphPoints());
 	}
 
 	private List<Vector2> GetGraphPoints() {
@@ -208,7 +208,7 @@ public class ADSRGraph : MonoBehaviour {
 /*******************************************/
 /*                    CLASS                */
 /*******************************************/
-public class ADSRGraphLine {
+public class ADSRLine {
 
 	/***************************************/
 	/*               MEMBERS               */
@@ -219,16 +219,16 @@ public class ADSRGraphLine {
 	/***************************************/
 	/*              PROPERTIES             */
 	/***************************************/
-	public List<ADSRGraphPoint> Points { get; private set; }
+	public List<ADSRPoint> Points { get; private set; }
 
 	/***************************************/
 	/*               METHODS               */
 	/***************************************/
-	public ADSRGraphLine() {
-		Points = new List<ADSRGraphPoint>();
+	public ADSRLine() {
+		Points = new List<ADSRPoint>();
 	}
 
-	public void Add(ADSRGraphPoint point) {
+	public void Add(ADSRPoint point) {
 		Points.Add(point);
 		OnLineChange?.Invoke();
 	}
@@ -243,7 +243,7 @@ public class ADSRGraphLine {
 /*******************************************/
 /*                   STRUCT                */
 /*******************************************/
-public struct ADSRGraphPoint {
+public struct ADSRPoint {
 
 	/***************************************/
 	/*              PROPERTIES             */
@@ -256,14 +256,14 @@ public struct ADSRGraphPoint {
 	/***************************************/
 	/*               METHODS               */
 	/***************************************/
-	public ADSRGraphPoint(ADSR_STATE state, double value, double totalTime, double stateTime) {
+	public ADSRPoint(ADSR_STATE state, double value, double totalTime, double stateTime) {
 		State = state;
 		Value = (float)value;
 		TotalTime = (float)totalTime;
 		StateTime = (float)stateTime;
 	}
 
-	public ADSRGraphPoint(ADSR_STATE state, float value, float totalTime, float stateTime) {
+	public ADSRPoint(ADSR_STATE state, float value, float totalTime, float stateTime) {
 		State = state;
 		Value = value;
 		TotalTime = totalTime;

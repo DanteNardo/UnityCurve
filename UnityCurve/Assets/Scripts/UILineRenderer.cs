@@ -16,12 +16,12 @@ public class UILineRenderer : Graphic {
 	/*               MEMBERS               */
 	/***************************************/
 	public UIGridRenderer referenceGrid;
-	public List<Vector2> points;
 	public float thickness = 10.0f;
 
 	/***************************************/
 	/*              PROPERTIES             */
 	/***************************************/
+	public UILine Line { get; private set; }
 	public List<UIColorPoint> ColorPoints { get; private set; } = new List<UIColorPoint>();
 	private Vector2Int GridSize { get; set; }
 	private float Width { get; set; }
@@ -34,9 +34,17 @@ public class UILineRenderer : Graphic {
 	/*               METHODS               */
 	/***************************************/
 	/// <summary>
+	/// Initialize line object and setup delegate so that SetVerticesDirty is called whenever the line points are updated. This forces the line to re-render.
+	/// </summary>
+	protected override void Awake() {
+		Line = new UILine();
+		Line.OnLineChange += SetVerticesDirty;
+	}
+
+	/// <summary>
 	/// If our reference grid object's size changes, update this entire line renderer.
 	/// </summary>
-	private void Update() {
+	private void LateUpdate() {
 		UpdateGridSizeIfChanged();
 	}
 
@@ -45,6 +53,7 @@ public class UILineRenderer : Graphic {
 	/// </summary>
 	/// <param name="vh">The vertexhelper utility for UI Graphic classes</param>
 	protected override void OnPopulateMesh(VertexHelper vh) {
+		Debug.Log("OnPopulateMesh: 1");
 		vh.Clear();
 
 		// Prepare important variables for line sizing
@@ -55,24 +64,27 @@ public class UILineRenderer : Graphic {
 		Angle = 0;
 
 		// Cannot create a line unless we have at least two points
-		if (points.Count < 2) {
+		if (Line.Points.Count < 2) {
 			return;
 		}
+		Debug.Log("OnPopulateMesh: 2");
 
 		// Create vertices for every point in the line
-		for (int i = 0; i < points.Count; i++) {
-			if (i < points.Count - 1) {
-				Angle = GetAngle(points[i], points[i + 1]) + 45f;
+		for (int i = 0; i < Line.Points.Count; i++) {
+			if (i < Line.Points.Count - 1) {
+				Angle = GetAngle(Line.Points[i], Line.Points[i + 1]) + 45f;
 			}
-			DrawVerticesForPoint(points[i], i, vh, Angle);
+			DrawVerticesForPoint(Line.Points[i], i, vh, Angle);
 		}
+		Debug.Log("OnPopulateMesh: 3");
 
 		// Create triangles from the line vertices
-		for (int j = 0; j < points.Count-1; j++) {
+		for (int j = 0; j < Line.Points.Count-1; j++) {
 			int index = j * 2;
 			vh.AddTriangle(index + 0, index + 1, index + 3);
 			vh.AddTriangle(index + 3, index + 2, index + 0);
 		}
+		Debug.Log("OnPopulateMesh: 4");
 	}
 
 	/// <summary>
@@ -150,6 +162,51 @@ public class UILineRenderer : Graphic {
 	/***************************************/
 	/*              COROUTINES             */
 	/***************************************/
+}
+
+
+/*******************************************/
+/*                    CLASS                */
+/*******************************************/
+public class UILine {
+
+	/***************************************/
+	/*               MEMBERS               */
+	/***************************************/
+	public delegate void OnLineChangeDelegate();
+	public event OnLineChangeDelegate OnLineChange;
+
+	/***************************************/
+	/*              PROPERTIES             */
+	/***************************************/
+	public List<Vector2> Points { get; private set; }
+
+	/***************************************/
+	/*               METHODS               */
+	/***************************************/
+	public UILine() {
+		Points = new List<Vector2>();
+	}
+
+	public void SetEqual(List<Vector2> points) {
+		Points = points;
+		OnLineChange?.Invoke();
+	}
+
+	public void AddRange(List<Vector2> points) {
+		Points.AddRange(points);
+		OnLineChange?.Invoke();
+	}
+
+	public void Add(Vector2 point) {
+		Points.Add(point);
+		OnLineChange?.Invoke();
+	}
+
+	public void Clear() {
+		Points.Clear();
+		OnLineChange?.Invoke();
+	}
 }
 
 

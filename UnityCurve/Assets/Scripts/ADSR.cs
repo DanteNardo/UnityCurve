@@ -109,37 +109,6 @@ public abstract class ADSR : MonoBehaviour {
     public UPDATE_TYPES UpdateType = UPDATE_TYPES.UPDATE;
 
     /// <summary>
-    /// Invoked on first frame of Attack state.
-    /// </summary>
-    [Space(10)]
-    public UnityEvent ADSRAttack;
-
-    /// <summary>
-    /// Invoked on first frame of Decay state.
-    /// </summary>
-    public UnityEvent ADSRDecay;
-
-    /// <summary>
-    /// Invoked on first frame of Sustain state.
-    /// </summary>
-    public UnityEvent ADSRSustain;
-
-    /// <summary>
-    /// Invoked on first frame of Release state.
-    /// </summary>
-    public UnityEvent ADSRRelease;
-
-    /// <summary>
-    /// Invoked on first frame of None state.
-    /// </summary>
-    public UnityEvent ADSREnd;
-
-    /// <summary>
-    /// Invoked on first frame of every state.
-    /// </summary>
-    public UnityEvent ADSRStateChange;
-
-    /// <summary>
     /// This is the default value for the ADSR
     /// variable. This is also the minimum 
     /// value and Value can never be lower 
@@ -189,6 +158,37 @@ public abstract class ADSR : MonoBehaviour {
     /// the release phase.
     /// </summary>
     public string releaseFormula;
+
+    /// <summary>
+    /// Invoked on first frame of Attack state.
+    /// </summary>
+    [Space(10)]
+    public UnityEvent ADSRAttack;
+
+    /// <summary>
+    /// Invoked on first frame of Decay state.
+    /// </summary>
+    public UnityEvent ADSRDecay;
+
+    /// <summary>
+    /// Invoked on first frame of Sustain state.
+    /// </summary>
+    public UnityEvent ADSRSustain;
+
+    /// <summary>
+    /// Invoked on first frame of Release state.
+    /// </summary>
+    public UnityEvent ADSRRelease;
+
+    /// <summary>
+    /// Invoked on first frame of None state.
+    /// </summary>
+    public UnityEvent ADSREnd;
+
+    /// <summary>
+    /// Invoked on first frame of every state.
+    /// </summary>
+    public UnityEvent ADSRStateChange;
 
     /***************************************/
     /*              PROPERTIES             */
@@ -403,9 +403,9 @@ public abstract class ADSR : MonoBehaviour {
     /// </summary>
     /// <param name="sustainTime">This simulates how long the input is held down for before it is released.</param>
     /// <returns>Every Value/TimeStamp pair that occurs in the envelope in a line format.</returns>
-    public ADSRGraphLine Simulate(float sustainTime) {
+    public ADSRLine Simulate(float sustainTime) {
         // Prepare simulated line and start attack
-        ADSRGraphLine simulatedLine = new ADSRGraphLine();
+        ADSRLine simulatedLine = new ADSRLine();
         ChangeToNextState(ADSR_STATE.ATTACK, false);
 
         /*
@@ -423,7 +423,7 @@ public abstract class ADSR : MonoBehaviour {
              * this point in time in the simulated line.
              */
             UpdateADSR();
-            simulatedLine.Add(new ADSRGraphPoint(State, Value, TotalTime, StateTime));
+            simulatedLine.Add(new ADSRPoint(State, Value, TotalTime, StateTime));
 
             /* 
              * UpdateADSR automatically handles most state transitions,
