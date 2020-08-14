@@ -31,9 +31,10 @@
 <p align="center">
 
   <h3 align="center">UnityCurve</h3>
+  <h4 align="center">!!! WORK IN PROGRESS: Not everything in this README is functional yet!!!</h4>
 
   <p align="center">
-    A simple system that create a generic implementation for an ADSR envelope; modulating a parameter over time in four distinct phases. This is based on Steve Swink's work, 'Game Feel'. The best part is that the user doesn't even need to do any scripting to get this system to work. Simple members are exposed in the inspector that provide full control over the parameter.  
+    A simple system for adding ADSR envelopes to a game. ADSR envelopes modulate a parameter over time in four distinct phases. This is based on Steve Swink's work, 'Game Feel'. The best part is that the user doesn't even need to do any scripting to get this system to work.
     <br />
     <a href="https://github.com/DanteNardo/UnityCurve"><strong>Explore the docs »</strong></a>
     <br />
