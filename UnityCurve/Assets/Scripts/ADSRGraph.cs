@@ -190,35 +190,26 @@ public class ADSRGraph : MonoBehaviour {
 	public void AddPoint() {
 		switch (y.State) {
 			case ADSR_STATE.ATTACK:
-				Line.Add(new ADSRPoint(y.State, Y(), y.TotalTime, y.StateTime));
+				Line.Add(new ADSRPoint(y.State, y.ExternalValue, y.TotalTime, y.StateTime));
 				attackDurationText.text = y.StateTime.ToString("0.##") + "s";
 				attackTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.DECAY:
-				Line.Add(new ADSRPoint(y.State, Y(), y.TotalTime, y.StateTime));
+				Line.Add(new ADSRPoint(y.State, y.ExternalValue, y.TotalTime, y.StateTime));
 				decayDurationText.text = y.StateTime.ToString("0.##") + "s";
 				decayTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.SUSTAIN:
-				Line.Add(new ADSRPoint(y.State, Y(), y.TotalTime, y.StateTime));
+				Line.Add(new ADSRPoint(y.State, y.ExternalValue, y.TotalTime, y.StateTime));
 				sustainDurationText.text = y.StateTime.ToString("0.##") + "s";
 				sustainTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.RELEASE:
-				Line.Add(new ADSRPoint(y.State, Y(), y.TotalTime, y.StateTime));
+				Line.Add(new ADSRPoint(y.State, y.ExternalValue, y.TotalTime, y.StateTime));
 				releaseDurationText.text = y.StateTime.ToString("0.##") + "s";
 				releaseTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 		}
-	}
-
-	/// <summary>
-	/// A simple function that gets the analog or digital Y value based on how this Graph was initialized.
-	/// </summary>
-	/// <returns>The current Y value for this Graph.</returns>
-	private double Y() {
-		return y.ExternalValue;
-		//return analog ? y.ValueAnalog : y.ValueDigital;
 	}
 
 	/// <summary>

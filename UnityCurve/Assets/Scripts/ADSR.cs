@@ -221,7 +221,28 @@ public class ADSR : MonoBehaviour {
     /// </summary>
     public UnityEvent ADSRStateChange;
 
-    private double value;
+    /**
+     * This is necessary to correctly release and decrease InternalValue
+     * back towards defaultValue. Use the following example of what
+     * would happen if this check wasn't here:
+     * ----------------------------------------------------------------
+     * --- Gamepad axis is 0.5f from ReadValue, InternalValue is 1.0f
+     * --- ExternalValue is InternalValue * ReadValue so 0.5f
+     * --- Next frame gamepad axis goes down to 0.0f triggering Release
+     * --- ExternalValue is now 1.0f so the ADSR will jump for one frame
+     * --- For ExternalValue to appear smooth we must modify Internal
+     */
+    /// <summary>
+    /// This is necessary to correctly release and decrease InternalValue
+    /// back towards defaultValue.Use the following example of what
+    /// would happen if this check wasn't here:
+    /// --- Gamepad axis is 0.5f from ReadValue, InternalValue is 1.0f
+    /// --- ExternalValue is InternalValue * ReadValue so 0.5f
+    /// --- Next frame gamepad axis goes down to 0.0f triggering Release
+    /// --- ExternalValue is now 1.0f so the ADSR will jump for one frame
+    /// --- For ExternalValue to appear smooth we must modify Internal
+    /// </summary>
+    private double lastExternalValue;
 
     /***************************************/
     /*              PROPERTIES             */
@@ -239,17 +260,33 @@ public class ADSR : MonoBehaviour {
     /// </summary>
     private double InternalValue { get; set; }
 
+    /// <summary>
+    /// This is the getter for the ADSR value
+    /// but if this ADSR variable is marked
+    /// as analog, then the current analog
+    /// value is read and applied to the
+    /// external value. This means that an 
+    /// analog gamepad axis will return a
+    /// value from 0.0f to the current
+    /// internal value.
+    /// </summary>
     public double ExternalValue {
         get {
             if (analog) {
-                // Return Value multipled by the analog 0.0 to 1.0 input axis if it isn't 0
                 float rv = inputAction.ReadValue<float>();
 				if (Mathf.Approximately(rv, 0.0f)) {
-					return InternalValue;
+                    lastExternalValue = InternalValue;
+                    return InternalValue;
 				}
-				else return InternalValue * rv;
-			}
-            else return InternalValue;
+				else {
+                    lastExternalValue = InternalValue * rv;
+                    return lastExternalValue;
+				}
+            }
+            else {
+                lastExternalValue = InternalValue;
+                return InternalValue;
+            }
         }
 	}
 
@@ -372,6 +409,9 @@ public class ADSR : MonoBehaviour {
 		 * Default Behavior: This script assumes that ACTION.started is 
 		 * triggered on the first frame of input only and that
 		 * ACTION.performed is triggered when the input is released.
+		 * 
+		 * IMPORTANT NOTE: THIS ASSUMES THAT THE INPUT ACTION IS OF 
+		 * TYPE BUTTON WITH PRESS ONLY INSTEAD OF VALUE OR RELEASE ONLY.
          * 
 		 * SETUP WITH INPUT ACTIONS ASSET:
          * inputActions.ACTION_MAP.ACTION_NAME.started += Attack;
@@ -380,25 +420,11 @@ public class ADSR : MonoBehaviour {
          * 
          * SETUP WITH SINGLE INPUT ACTION:
          * inputAction.started += Attack;
-         * inputAction.performed += Release;
          * inputAction.canceled += Release;
          * inputAction.Enable();
          */
-        switch (analog) {
-            case true:
-                inputAction.started += Attack;
-                inputAction.canceled += Release;
-                break;
-            case false:
-                inputAction.started += Attack;
-                inputAction.performed += Release;
-                break;
-        }
-        
-        // For Debugging
-        inputAction.started += log => Debug.Log("InputAction.Started // Value:" + inputAction.ReadValue<float>());
-        inputAction.performed += log => Debug.Log("InputAction.Performed // Value:" + inputAction.ReadValue<float>());
-        inputAction.canceled += log => Debug.Log("InputAction.Canceled // Value:" + inputAction.ReadValue<float>());
+        inputAction.started += Attack;
+        inputAction.canceled += Release;
         inputAction.Enable();
     }
 
@@ -415,21 +441,11 @@ public class ADSR : MonoBehaviour {
          * 
          * SETUP WITH SINGLE INPUT ACTION:
          * inputAction.started -= Attack;
-         * inputAction.performed -= Release;
+         * inputAction.canceled -= Release;
          * inputAction.Disable();
          */
-        switch (analog) {
-            case true:
-                inputAction.started -= Attack;
-                inputAction.canceled -= Release;
-                break;
-            case false:
-                inputAction.started -= Attack;
-                inputAction.performed -= Release;
-                break;
-        }
-        //inputAction.started -= log => Debug.Log("InputAction.Started");
-        //inputAction.performed -= log => Debug.Log("InputAction.Performed");
+        inputAction.started -= Attack;
+        inputAction.canceled -= Release;
         inputAction.Disable();
     }
 
@@ -476,6 +492,20 @@ public class ADSR : MonoBehaviour {
     /// </summary>
     /// <param name="callbackContext">The input callback context.</param>
     protected void Release(InputAction.CallbackContext callbackContext) {
+        /**
+         * This is necessary to correctly release and decrease InternalValue
+         * back towards defaultValue. Use the following example of what
+         * would happen if this check wasn't here:
+         * ----------------------------------------------------------------
+         * --- Gamepad axis is 0.5f from ReadValue, InternalValue is 1.0f
+         * --- ExternalValue is InternalValue * ReadValue so 0.5f
+         * --- Next frame gamepad axis goes down to 0.0f triggering Release
+         * --- ExternalValue is now 1.0f so the ADSR will jump for one frame
+         * --- For ExternalValue to appear smooth we must modify Internal
+         */
+        if (analog) {
+            InternalValue = lastExternalValue;
+        }
         ChangeToNextState(ADSR_STATE.RELEASE);
     }
 
