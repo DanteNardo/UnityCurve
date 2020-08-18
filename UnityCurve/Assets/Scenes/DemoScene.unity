@@ -134,7 +134,7 @@ PrefabInstance:
         type: 3}
       propertyPath: y
       value: 
-      objectReference: {fileID: 448711092}
+      objectReference: {fileID: 448711094}
     - target: {fileID: 6616934647037448004, guid: 67fec3a31fecf8d4d923cb2b4a0d4cd0,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -262,15 +262,29 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 448711093}
-  - component: {fileID: 448711092}
+  - component: {fileID: 448711094}
   m_Layer: 0
-  m_Name: ADSR Release Demo
+  m_Name: ADSR Parameter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &448711092
+--- !u!4 &448711093
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 448711091}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &448711094
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -279,11 +293,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 448711091}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 567ce8fffdabee24ebdeb6a08fd7a80d, type: 3}
+  m_Script: {fileID: 11500000, guid: aee8aa493b64e6643aaeb021c637feb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inputAction:
+    m_Name: Input
+    m_Type: 1
+    m_ExpectedControlType: Button
+    m_Id: 9f7d7810-9e54-4246-a5eb-43c61db3b4c9
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings:
+    - m_Name: 
+      m_Id: b4376c52-f5f2-484f-9f02-c3f826c8c4a7
+      m_Path: <Gamepad>/leftStick/up
+      m_Interactions: Press
+      m_Processors: 
+      m_Groups: 
+      m_Action: Input
+      m_Flags: 0
   PARAMETER_NAME: X
   UpdateType: 2
+  analog: 1
   defaultValue: 0
   attackTarget: 10
   sustainTarget: 8
@@ -320,36 +351,6 @@ MonoBehaviour:
   ADSRStateChange:
     m_PersistentCalls:
       m_Calls: []
-  inputAction:
-    m_Name: Input
-    m_Type: 1
-    m_ExpectedControlType: Button
-    m_Id: d5f11061-5ac0-463e-98f6-cd1154b50251
-    m_Processors: 
-    m_Interactions: Press(behavior=1)
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: 1585999c-ee8d-43cc-b08f-98cf31c1ccb4
-      m_Path: <Keyboard>/0
-      m_Interactions: 
-      m_Processors: 
-      m_Groups: 
-      m_Action: Input
-      m_Flags: 0
---- !u!4 &448711093
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 448711091}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &939088051
 GameObject:
   m_ObjectHideFlags: 0
@@ -646,7 +647,12 @@ PrefabInstance:
         type: 3}
       propertyPath: y
       value: 
-      objectReference: {fileID: 448711092}
+      objectReference: {fileID: 448711094}
+    - target: {fileID: 6627247281206938125, guid: f594570c77f2b5a40a1b02e09c81f01c,
+        type: 3}
+      propertyPath: analog
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8339291364834460760, guid: f594570c77f2b5a40a1b02e09c81f01c,
         type: 3}
       propertyPath: m_Name

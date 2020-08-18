@@ -68,7 +68,7 @@ public enum UPDATE_TYPES {
 /// whole complicated and mismanaged
 /// state machines and input systems.
 /// </summary>
-public abstract class ADSR : MonoBehaviour {
+public class ADSR : MonoBehaviour {
 
     /***************************************/
     /*               MEMBERS               */
@@ -84,6 +84,26 @@ public abstract class ADSR : MonoBehaviour {
     private CalcEngine.CalcEngine calcEngine;
 
     /// <summary>
+    /// This is a reference to an asset
+    /// that is created as a part of the
+    /// 2019+ Unity Input system. Most games
+    /// will have a custom one that you use.
+    /// HOWEVER, the default version of this
+    /// script simply looks for a given 
+    /// InputAction. You may modify it to 
+    /// use an asset if that is how your 
+    /// game is set up.
+    /// </summary>
+    //public InputActions inputActions;
+
+    /// <summary>
+    /// The code assumes that this reads
+    /// input from some kind of Release
+    /// button. See Enable/Disable Input.
+    /// </summary>
+    public InputAction inputAction;
+
+    /// <summary>
     /// Named like a constant to enforce not
     /// changing, but accessible in inspector.
     /// 
@@ -97,6 +117,7 @@ public abstract class ADSR : MonoBehaviour {
     /// ERROR SAYING THERE ARE TOO FEW 
     /// PARAMETERS.
     /// </summary>
+    [Space(10)]
     public string PARAMETER_NAME = "X";
 
     /// <summary>
@@ -107,6 +128,16 @@ public abstract class ADSR : MonoBehaviour {
     /// recordings.
     /// </summary>
     public UPDATE_TYPES UpdateType = UPDATE_TYPES.UPDATE;
+
+    /// <summary>
+    /// Mark this as true for gamepad axises
+    /// or anything else that reads in analog
+    /// input. Doing so will make sure that
+    /// the Attack and Release commands are
+    /// triggered by the correct stage of the
+    /// input action.
+    /// </summary>
+    public bool analog = false;
 
     /// <summary>
     /// This is the default value for the ADSR
@@ -190,6 +221,8 @@ public abstract class ADSR : MonoBehaviour {
     /// </summary>
     public UnityEvent ADSRStateChange;
 
+    private double value;
+
     /***************************************/
     /*              PROPERTIES             */
     /***************************************/
@@ -204,21 +237,21 @@ public abstract class ADSR : MonoBehaviour {
     /// This is the value that modulates over
     /// the four ADSR phases.
     /// </summary>
-    public double Value { get; set; }
+    private double InternalValue { get; set; }
 
-    /// <summary>
-    /// This is the value that modulates over
-    /// the four ADSR phases, but returned
-    /// as a float.
-    /// </summary>
-    public float ValueAsFloat { get { return (float)Value; } }
-
-    /// <summary>
-    /// This is the value that modulates over
-    /// the four ADSR phases, but returned
-    /// as a float.
-    /// </summary>
-    public float ValueAsInt { get { return (int)Value; } }
+    public double ExternalValue {
+        get {
+            if (analog) {
+                // Return Value multipled by the analog 0.0 to 1.0 input axis if it isn't 0
+                float rv = inputAction.ReadValue<float>();
+				if (Mathf.Approximately(rv, 0.0f)) {
+					return InternalValue;
+				}
+				else return InternalValue * rv;
+			}
+            else return InternalValue;
+        }
+	}
 
     /// <summary>
     /// This represents the time that has
@@ -287,7 +320,7 @@ public abstract class ADSR : MonoBehaviour {
         ReleaseExpression = calcEngine.Parse(releaseFormula);
 
         // Initialize Value
-        Value = defaultValue;
+        InternalValue = defaultValue;
     }
 
     /// <summary>
@@ -331,13 +364,74 @@ public abstract class ADSR : MonoBehaviour {
         DisableInput();
     }
 
-    /// <summary>
-    /// These are the abstract methods that must be implemented when
-    /// inherited by a child. These customize the input that triggers
-    /// the ADSR envelope and handles when the parameter is updated.
-    /// </summary>
-    protected abstract void EnableInput();
-    protected abstract void DisableInput();
+    protected void EnableInput() {
+        /* 
+         * =============================================================
+         * CUSTOMIZE YOUR INPUT IN EnableInput() TO SUIT YOUR NEEDS
+         * =============================================================
+		 * Default Behavior: This script assumes that ACTION.started is 
+		 * triggered on the first frame of input only and that
+		 * ACTION.performed is triggered when the input is released.
+         * 
+		 * SETUP WITH INPUT ACTIONS ASSET:
+         * inputActions.ACTION_MAP.ACTION_NAME.started += Attack;
+         * inputActions.ACTION_MAP.ACTION_NAME.performed += Release;
+         * inputActions.ACTION_MAP.ACTION_NAME.Enable();
+         * 
+         * SETUP WITH SINGLE INPUT ACTION:
+         * inputAction.started += Attack;
+         * inputAction.performed += Release;
+         * inputAction.canceled += Release;
+         * inputAction.Enable();
+         */
+        switch (analog) {
+            case true:
+                inputAction.started += Attack;
+                inputAction.canceled += Release;
+                break;
+            case false:
+                inputAction.started += Attack;
+                inputAction.performed += Release;
+                break;
+        }
+        
+        // For Debugging
+        inputAction.started += log => Debug.Log("InputAction.Started // Value:" + inputAction.ReadValue<float>());
+        inputAction.performed += log => Debug.Log("InputAction.Performed // Value:" + inputAction.ReadValue<float>());
+        inputAction.canceled += log => Debug.Log("InputAction.Canceled // Value:" + inputAction.ReadValue<float>());
+        inputAction.Enable();
+    }
+
+    protected void DisableInput() {
+        /* 
+         * =============================================================
+         * CUSTOMIZE YOUR INPUT IN DisableInput() TO SUIT YOUR NEEDS
+         * =============================================================
+         * 
+		 * SETUP WITH INPUT ACTIONS ASSET:
+         * inputActions.ACTION_MAP.ACTION_NAME.started -= Attack;
+         * inputActions.ACTION_MAP.ACTION_NAME.performed -= Release;
+         * inputActions.ACTION_MAP.ACTION_NAME.Disable();
+         * 
+         * SETUP WITH SINGLE INPUT ACTION:
+         * inputAction.started -= Attack;
+         * inputAction.performed -= Release;
+         * inputAction.Disable();
+         */
+        switch (analog) {
+            case true:
+                inputAction.started -= Attack;
+                inputAction.canceled -= Release;
+                break;
+            case false:
+                inputAction.started -= Attack;
+                inputAction.performed -= Release;
+                break;
+        }
+        //inputAction.started -= log => Debug.Log("InputAction.Started");
+        //inputAction.performed -= log => Debug.Log("InputAction.Performed");
+        inputAction.Disable();
+    }
 
     /// <summary>
     /// Updates Value, StateTime, and TotalTime based on current state.
@@ -423,7 +517,7 @@ public abstract class ADSR : MonoBehaviour {
              * this point in time in the simulated line.
              */
             UpdateADSR();
-            simulatedLine.Add(new ADSRPoint(State, Value, TotalTime, StateTime));
+            simulatedLine.Add(new ADSRPoint(State, InternalValue, TotalTime, StateTime));
 
             /* 
              * UpdateADSR automatically handles most state transitions,
@@ -448,7 +542,7 @@ public abstract class ADSR : MonoBehaviour {
     private void UpdateValue(Expression expression) {
         StateTime += DeltaTime();
         TotalTime += DeltaTime();
-        Value += CalculateDelta(expression);
+        InternalValue += CalculateDelta(expression);
 
         // Change to the next state once we hit target value or release input.
         // To change from sustain to release, we need to check for a release.
@@ -564,16 +658,16 @@ public abstract class ADSR : MonoBehaviour {
     /// <returns>True if Value is at target or has crossed past it, else false.</returns>
     private bool HitTarget(float target, bool increasingValue) {
         // Value is close to target
-        if (Mathf.Approximately((float)Value, (float)target))
+        if (Mathf.Approximately((float)InternalValue, (float)target))
             return true;
 
         // These are the cases where the value oversteps the target
-        if (increasingValue && Value > target) {
-            Value = target;
+        if (increasingValue && InternalValue > target) {
+            InternalValue = target;
             return true;
         }
-        if (!increasingValue && Value < target) {
-            Value = target;
+        if (!increasingValue && InternalValue < target) {
+            InternalValue = target;
             return true;
         }
 
