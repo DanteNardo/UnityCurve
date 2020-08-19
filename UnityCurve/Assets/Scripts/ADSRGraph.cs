@@ -74,6 +74,26 @@ public class ADSRGraph : MonoBehaviour {
 	public Color releaseColor;
 
 	/// <summary>
+	/// The UI element that renders the minimum value on the x axis.
+	/// </summary>
+	public TMP_Text xAxisMinimumText;
+
+	/// <summary>
+	/// The UI element that renders the maximum value on the x axis.
+	/// </summary>
+	public TMP_Text xAxisMaximumText;
+
+	/// <summary>
+	/// The UI element that renders the minimum value on the y axis.
+	/// </summary>
+	public TMP_Text yAxisMinimumText;
+
+	/// <summary>
+	/// The UI element that renders the maximum value on the y axis.
+	/// </summary>
+	public TMP_Text yAxisMaximumText;
+
+	/// <summary>
 	/// The UI element that renders the duration of the attack phase.
 	/// </summary>
 	public TMP_Text attackDurationText;
@@ -190,26 +210,32 @@ public class ADSRGraph : MonoBehaviour {
 	public void AddPoint() {
 		switch (y.State) {
 			case ADSR_STATE.ATTACK:
-				Line.Add(new ADSRPoint(y.State, y.ExternalValue, y.TotalTime, y.StateTime));
+				Line.Add(new ADSRPoint(y.State, y.Value, y.TotalTime, y.StateTime));
 				attackDurationText.text = y.StateTime.ToString("0.##") + "s";
 				attackTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.DECAY:
-				Line.Add(new ADSRPoint(y.State, y.ExternalValue, y.TotalTime, y.StateTime));
+				Line.Add(new ADSRPoint(y.State, y.Value, y.TotalTime, y.StateTime));
 				decayDurationText.text = y.StateTime.ToString("0.##") + "s";
 				decayTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.SUSTAIN:
-				Line.Add(new ADSRPoint(y.State, y.ExternalValue, y.TotalTime, y.StateTime));
+				Line.Add(new ADSRPoint(y.State, y.Value, y.TotalTime, y.StateTime));
 				sustainDurationText.text = y.StateTime.ToString("0.##") + "s";
 				sustainTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 			case ADSR_STATE.RELEASE:
-				Line.Add(new ADSRPoint(y.State, y.ExternalValue, y.TotalTime, y.StateTime));
+				Line.Add(new ADSRPoint(y.State, y.Value, y.TotalTime, y.StateTime));
 				releaseDurationText.text = y.StateTime.ToString("0.##") + "s";
 				releaseTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
 				break;
 		}
+
+		// Update Y and X Axis
+		xAxisMinimumText.text = "0.0s";
+		xAxisMaximumText.text = Line.LastPoint?.TotalTime.ToString("0.##") + "s";
+		yAxisMinimumText.text = y.defaultValue.ToString("0.##");
+		yAxisMaximumText.text = y.attackTarget.ToString("0.##");
 	}
 
 	/// <summary>
@@ -301,6 +327,12 @@ public class ADSRGraph : MonoBehaviour {
 					break;
 			}
 		}
+
+		// Update Y and X Axis
+		xAxisMinimumText.text = "0.0s";
+		xAxisMaximumText.text = Line.LastPoint?.TotalTime.ToString("0.##") + "s";
+		yAxisMinimumText.text = y.defaultValue.ToString("0.##");
+		yAxisMaximumText.text = y.attackTarget.ToString("0.##");
 	}
 
 	/// <summary>

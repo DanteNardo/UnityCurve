@@ -63,7 +63,7 @@ public class UILineRenderer : Graphic {
 		Angle = 0;
 
 		// Cannot create a line unless we have at least two points
-		if (Line.Points.Count < 2) {
+		if (Line == null || Line.Points.Count < 2) {
 			return;
 		}
 

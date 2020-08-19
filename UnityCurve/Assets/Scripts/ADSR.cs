@@ -97,13 +97,6 @@ public class ADSR : MonoBehaviour {
     //public InputActions inputActions;
 
     /// <summary>
-    /// The code assumes that this reads
-    /// input from some kind of Release
-    /// button. See Enable/Disable Input.
-    /// </summary>
-    public InputAction inputAction;
-
-    /// <summary>
     /// Named like a constant to enforce not
     /// changing, but accessible in inspector.
     /// 
@@ -117,7 +110,6 @@ public class ADSR : MonoBehaviour {
     /// ERROR SAYING THERE ARE TOO FEW 
     /// PARAMETERS.
     /// </summary>
-    [Space(10)]
     public string PARAMETER_NAME = "X";
 
     /// <summary>
@@ -130,6 +122,22 @@ public class ADSR : MonoBehaviour {
     public UPDATE_TYPES UpdateType = UPDATE_TYPES.UPDATE;
 
     /// <summary>
+    /// The code assumes that this reads
+    /// input from some kind of Release
+    /// button. See Enable/Disable Input.
+    /// </summary>
+    [Space(10)]
+    public InputAction inputAction;
+
+    /// <summary>
+    /// The code assumes that this reads
+    /// input from some kind of Release
+    /// button. See Enable/Disable Input.
+    /// </summary>
+    [Space(10)]
+    public InputAction snapAction;
+
+    /// <summary>
     /// Mark this as true for gamepad axises
     /// or anything else that reads in analog
     /// input. Doing so will make sure that
@@ -137,6 +145,7 @@ public class ADSR : MonoBehaviour {
     /// triggered by the correct stage of the
     /// input action.
     /// </summary>
+    [Space(10)]
     public bool analog = false;
 
     /// <summary>
@@ -221,29 +230,6 @@ public class ADSR : MonoBehaviour {
     /// </summary>
     public UnityEvent ADSRStateChange;
 
-    /**
-     * This is necessary to correctly release and decrease InternalValue
-     * back towards defaultValue. Use the following example of what
-     * would happen if this check wasn't here:
-     * ----------------------------------------------------------------
-     * --- Gamepad axis is 0.5f from ReadValue, InternalValue is 1.0f
-     * --- ExternalValue is InternalValue * ReadValue so 0.5f
-     * --- Next frame gamepad axis goes down to 0.0f triggering Release
-     * --- ExternalValue is now 1.0f so the ADSR will jump for one frame
-     * --- For ExternalValue to appear smooth we must modify Internal
-     */
-    /// <summary>
-    /// This is necessary to correctly release and decrease InternalValue
-    /// back towards defaultValue.Use the following example of what
-    /// would happen if this check wasn't here:
-    /// --- Gamepad axis is 0.5f from ReadValue, InternalValue is 1.0f
-    /// --- ExternalValue is InternalValue * ReadValue so 0.5f
-    /// --- Next frame gamepad axis goes down to 0.0f triggering Release
-    /// --- ExternalValue is now 1.0f so the ADSR will jump for one frame
-    /// --- For ExternalValue to appear smooth we must modify Internal
-    /// </summary>
-    private double lastExternalValue;
-
     /***************************************/
     /*              PROPERTIES             */
     /***************************************/
@@ -258,37 +244,7 @@ public class ADSR : MonoBehaviour {
     /// This is the value that modulates over
     /// the four ADSR phases.
     /// </summary>
-    private double InternalValue { get; set; }
-
-    /// <summary>
-    /// This is the getter for the ADSR value
-    /// but if this ADSR variable is marked
-    /// as analog, then the current analog
-    /// value is read and applied to the
-    /// external value. This means that an 
-    /// analog gamepad axis will return a
-    /// value from 0.0f to the current
-    /// internal value.
-    /// </summary>
-    public double ExternalValue {
-        get {
-            if (analog) {
-                float rv = inputAction.ReadValue<float>();
-				if (Mathf.Approximately(rv, 0.0f)) {
-                    lastExternalValue = InternalValue;
-                    return InternalValue;
-				}
-				else {
-                    lastExternalValue = InternalValue * rv;
-                    return lastExternalValue;
-				}
-            }
-            else {
-                lastExternalValue = InternalValue;
-                return InternalValue;
-            }
-        }
-	}
+    public double Value { get; private set; }
 
     /// <summary>
     /// This represents the time that has
@@ -357,7 +313,7 @@ public class ADSR : MonoBehaviour {
         ReleaseExpression = calcEngine.Parse(releaseFormula);
 
         // Initialize Value
-        InternalValue = defaultValue;
+        Value = defaultValue;
     }
 
     /// <summary>
@@ -422,10 +378,16 @@ public class ADSR : MonoBehaviour {
          * inputAction.started += Attack;
          * inputAction.canceled += Release;
          * inputAction.Enable();
+         * 
+         * snapAction.started += Snap;
+         * snapAction.Enable();
          */
         inputAction.started += Attack;
         inputAction.canceled += Release;
         inputAction.Enable();
+
+        snapAction.started += Snap;
+        snapAction.Enable();
     }
 
     protected void DisableInput() {
@@ -443,38 +405,16 @@ public class ADSR : MonoBehaviour {
          * inputAction.started -= Attack;
          * inputAction.canceled -= Release;
          * inputAction.Disable();
+         * 
+         * snapAction.started -= Snap;
+         * snapAction.Disable();
          */
         inputAction.started -= Attack;
         inputAction.canceled -= Release;
         inputAction.Disable();
-    }
 
-    /// <summary>
-    /// Updates Value, StateTime, and TotalTime based on current state.
-    /// This should be called in Update/LateUpdate/FixedUpdate depending
-    /// on how your own update methods are setup and what the ADSR
-    /// variable is for.
-    /// </summary>
-    protected void UpdateADSR() {
-        // Update Value based on state
-        switch (State) {
-            case ADSR_STATE.ATTACK:
-                UpdateValue(AttackExpression);
-                break;
-            case ADSR_STATE.DECAY:
-                UpdateValue(DecayExpression);
-                break;
-            case ADSR_STATE.SUSTAIN:
-                // Sustain does not require any changes to value.
-                // We literally want to keep it constant.
-                // Just update time.
-                StateTime += DeltaTime();
-                TotalTime += DeltaTime();
-                break;
-            case ADSR_STATE.RELEASE:
-                UpdateValue(ReleaseExpression);
-                break;
-        }
+        snapAction.started -= Snap;
+        snapAction.Disable();
     }
 
     /// <summary>
@@ -492,22 +432,17 @@ public class ADSR : MonoBehaviour {
     /// </summary>
     /// <param name="callbackContext">The input callback context.</param>
     protected void Release(InputAction.CallbackContext callbackContext) {
-        /**
-         * This is necessary to correctly release and decrease InternalValue
-         * back towards defaultValue. Use the following example of what
-         * would happen if this check wasn't here:
-         * ----------------------------------------------------------------
-         * --- Gamepad axis is 0.5f from ReadValue, InternalValue is 1.0f
-         * --- ExternalValue is InternalValue * ReadValue so 0.5f
-         * --- Next frame gamepad axis goes down to 0.0f triggering Release
-         * --- ExternalValue is now 1.0f so the ADSR will jump for one frame
-         * --- For ExternalValue to appear smooth we must modify Internal
-         */
-        if (analog) {
-            InternalValue = lastExternalValue;
-        }
         ChangeToNextState(ADSR_STATE.RELEASE);
     }
+
+    /// <summary>
+    /// Triggered by an input event. "Snaps" ADSR envelope back to default value.
+    /// This should be triggered by input setup in EnableInput.
+    /// </summary>
+    /// <param name="callbackContext">The input callback context.</param>
+    protected void Snap(InputAction.CallbackContext callbackContext) {
+        StopSignal();
+	}
 
     /// <summary>
     /// Halts state transitions and resets to default value.
@@ -547,7 +482,7 @@ public class ADSR : MonoBehaviour {
              * this point in time in the simulated line.
              */
             UpdateADSR();
-            simulatedLine.Add(new ADSRPoint(State, InternalValue, TotalTime, StateTime));
+            simulatedLine.Add(new ADSRPoint(State, Value, TotalTime, StateTime));
 
             /* 
              * UpdateADSR automatically handles most state transitions,
@@ -565,6 +500,46 @@ public class ADSR : MonoBehaviour {
     }
 
     /// <summary>
+    /// Updates Value, StateTime, and TotalTime based on current state.
+    /// This should be called in Update/LateUpdate/FixedUpdate depending
+    /// on how your own update methods are setup and what the ADSR
+    /// variable is for.
+    /// </summary>
+    protected void UpdateADSR() {
+        // Update Value based on state
+        switch (State) {
+            case ADSR_STATE.ATTACK:
+                UpdateValue(AttackExpression);
+
+                // FOR DEBUGGING; TODO: REMOVE
+                Debug.Log("ADSRValue:" + Value + "    READValue:" + inputAction.ReadValue<float>());
+                break;
+            case ADSR_STATE.DECAY:
+                UpdateValue(DecayExpression);
+
+                // FOR DEBUGGING; TODO: REMOVE
+                Debug.Log("ADSRValue:" + Value + "    READValue:" + inputAction.ReadValue<float>());
+                break;
+            case ADSR_STATE.SUSTAIN:
+                // Sustain does not require any changes to value.
+                // We literally want to keep it constant.
+                // Just update time.
+                StateTime += DeltaTime();
+                TotalTime += DeltaTime();
+
+                // FOR DEBUGGING; TODO: REMOVE
+                Debug.Log("ADSRValue:" + Value + "    READValue:" + inputAction.ReadValue<float>());
+                break;
+            case ADSR_STATE.RELEASE:
+                UpdateValue(ReleaseExpression);
+
+                // FOR DEBUGGING; TODO: REMOVE
+                Debug.Log("ADSRValue:" + Value + "    READValue:" + inputAction.ReadValue<float>());
+                break;
+        }
+    }
+
+    /// <summary>
     /// Updates the time in this state and the value based on expression and time.
     /// Automatically triggers transition to next state when we hit target value.
     /// </summary>
@@ -572,7 +547,7 @@ public class ADSR : MonoBehaviour {
     private void UpdateValue(Expression expression) {
         StateTime += DeltaTime();
         TotalTime += DeltaTime();
-        InternalValue += CalculateDelta(expression);
+        Value += CalculateDelta(expression);
 
         // Change to the next state once we hit target value or release input.
         // To change from sustain to release, we need to check for a release.
@@ -615,8 +590,8 @@ public class ADSR : MonoBehaviour {
         State = toState;
         StateTime = 0.0f;
 
-        // Reset total time if we have returned to default state
-        if (State == ADSR_STATE.NONE) {
+        // Reset total time if we restart the envelope
+        if (State == ADSR_STATE.ATTACK) {
             TotalTime = 0.0f;
 		}
 
@@ -688,16 +663,16 @@ public class ADSR : MonoBehaviour {
     /// <returns>True if Value is at target or has crossed past it, else false.</returns>
     private bool HitTarget(float target, bool increasingValue) {
         // Value is close to target
-        if (Mathf.Approximately((float)InternalValue, (float)target))
+        if (Mathf.Approximately((float)Value, (float)target))
             return true;
 
         // These are the cases where the value oversteps the target
-        if (increasingValue && InternalValue > target) {
-            InternalValue = target;
+        if (increasingValue && Value > target) {
+            Value = target;
             return true;
         }
-        if (!increasingValue && InternalValue < target) {
-            InternalValue = target;
+        if (!increasingValue && Value < target) {
+            Value = target;
             return true;
         }
 
@@ -730,10 +705,18 @@ public class ADSR : MonoBehaviour {
         calcEngine.Variables[PARAMETER_NAME] = StateTime;
 
         // Calculate the result of the expression
-        var result = calcEngine.Evaluate(expression);
+        double result = (double)calcEngine.Evaluate(expression);
+
+        // Multiply by current analog value if it isn't 0.0f
+        if (analog) {
+            float rv = inputAction.ReadValue<float>();
+            if (Mathf.Approximately(rv, 0.0f) == false) {
+                result *= inputAction.ReadValue<float>();
+            }
+		}
 
         // Return delta
-        return (double)result;
+        return result;
     }
 
     /// <summary>

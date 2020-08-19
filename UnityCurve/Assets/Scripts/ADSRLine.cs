@@ -30,6 +30,16 @@ public class ADSRLine {
 	/// </summary>
 	public List<ADSRPoint> Points { get; private set; }
 
+	/// <summary>
+	/// A property that makes it easy to get the last point in the line.
+	/// </summary>
+	public ADSRPoint? LastPoint { 
+		get {
+			if (Points.Count == 0) return null;
+			return Points[Points.Count - 1]; 
+		}
+	}
+
 	/***************************************/
 	/*               METHODS               */
 	/***************************************/
