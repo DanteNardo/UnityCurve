@@ -357,8 +357,11 @@ public class ADSR : MonoBehaviour {
         DisableInput();
     }
 
+	/// <summary>
+	/// Enables input actions that trigger Attack/Release and Snap.
+	/// </summary>
     protected void EnableInput() {
-        /* 
+		/* 
          * =============================================================
          * CUSTOMIZE YOUR INPUT IN EnableInput() TO SUIT YOUR NEEDS
          * =============================================================
@@ -373,6 +376,9 @@ public class ADSR : MonoBehaviour {
          * inputActions.ACTION_MAP.ACTION_NAME.started += Attack;
          * inputActions.ACTION_MAP.ACTION_NAME.performed += Release;
          * inputActions.ACTION_MAP.ACTION_NAME.Enable();
+		 * 
+         * inputActions.ACTION_MAP.OTHER_ACTION.started += Snap;
+         * inputActions.ACTION_MAP.OTHER_ACTION.Enable();
          * 
          * SETUP WITH SINGLE INPUT ACTION:
          * inputAction.started += Attack;
@@ -382,7 +388,7 @@ public class ADSR : MonoBehaviour {
          * snapAction.started += Snap;
          * snapAction.Enable();
          */
-        inputAction.started += Attack;
+		inputAction.started += Attack;
         inputAction.canceled += Release;
         inputAction.Enable();
 
@@ -390,8 +396,11 @@ public class ADSR : MonoBehaviour {
         snapAction.Enable();
     }
 
-    protected void DisableInput() {
-        /* 
+	/// <summary>
+	/// Disables input actions that trigger Attack/Release and Snap.
+	/// </summary>
+	protected void DisableInput() {
+		/* 
          * =============================================================
          * CUSTOMIZE YOUR INPUT IN DisableInput() TO SUIT YOUR NEEDS
          * =============================================================
@@ -400,6 +409,9 @@ public class ADSR : MonoBehaviour {
          * inputActions.ACTION_MAP.ACTION_NAME.started -= Attack;
          * inputActions.ACTION_MAP.ACTION_NAME.performed -= Release;
          * inputActions.ACTION_MAP.ACTION_NAME.Disable();
+		 * 
+         * inputActions.ACTION_MAP.OTHER_ACTION.started -= Snap;
+         * inputActions.ACTION_MAP.OTHER_ACTION.Disable();
          * 
          * SETUP WITH SINGLE INPUT ACTION:
          * inputAction.started -= Attack;
@@ -409,7 +421,7 @@ public class ADSR : MonoBehaviour {
          * snapAction.started -= Snap;
          * snapAction.Disable();
          */
-        inputAction.started -= Attack;
+		inputAction.started -= Attack;
         inputAction.canceled -= Release;
         inputAction.Disable();
 
@@ -427,12 +439,17 @@ public class ADSR : MonoBehaviour {
     }
 
     /// <summary>
-    /// Triggered by an input event. Changes state to Attack.
+    /// Triggered by an input event. Changes state to Release UNLESS this parameter has snapped.
     /// This should be triggered by input setup in EnableInput.
     /// </summary>
     /// <param name="callbackContext">The input callback context.</param>
     protected void Release(InputAction.CallbackContext callbackContext) {
-        ChangeToNextState(ADSR_STATE.RELEASE);
+		// If this parameter is "snapped" by an inputAction then the state will be NONE (see snapAction).
+		// This means the ADSR Value went to 0 and we want it to stay there.
+		// If we released after a snap then the parameter would jump back to its previous value.
+		if (State != ADSR_STATE.NONE) {
+			ChangeToNextState(ADSR_STATE.RELEASE);
+		}
     }
 
     /// <summary>
@@ -590,8 +607,14 @@ public class ADSR : MonoBehaviour {
         State = toState;
         StateTime = 0.0f;
 
-        // Reset total time if we restart the envelope
-        if (State == ADSR_STATE.ATTACK) {
+		// Hard reset Value if we end the envelope
+		// This is only used if mid-execution the envelope is snapped (see snapAction).
+		if (State == ADSR_STATE.NONE) {
+			Value = defaultValue;
+		}
+
+		// Reset total time if we restart the envelope
+		if (State == ADSR_STATE.ATTACK) {
             TotalTime = 0.0f;
 		}
 
@@ -663,7 +686,7 @@ public class ADSR : MonoBehaviour {
     /// <returns>True if Value is at target or has crossed past it, else false.</returns>
     private bool HitTarget(float target, bool increasingValue) {
         // Value is close to target
-        if (Mathf.Approximately((float)Value, (float)target))
+        if (Mathf.Approximately((float)Value, target))
             return true;
 
         // These are the cases where the value oversteps the target
