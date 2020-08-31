@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d78f50a784454a4fa7a9f8e4ca2495b, type: 3}
+  m_Name: AttackCurve
+  m_EditorClassIdentifier: 
+  formula: 
+  actions:
+  - {fileID: 11400000, guid: b98d80cd82ef04c42bd240358503a4f6, type: 2}
+  transitions:
+  - decision: {fileID: 11400000, guid: a1685b73b65f0b748a9c903d5d049e89, type: 2}
+    trueCurve: {fileID: 11400000, guid: fa792cc27b1655d43b9c619f9431cb3e, type: 2}
+    falseCurve: {fileID: 11400000, guid: 8a2bf51811961d0498e213c40b5d0df0, type: 2}
