@@ -22,8 +22,9 @@ namespace UnityCurve {
 		/*               MEMBERS               */
 		/***************************************/
 		public string formula;
+		public Curve nextCurve;
 		protected UnityCurve unityCurve;
-		private bool active;
+		private bool active = false;
 		private Expression expression;
 
 		/***************************************/

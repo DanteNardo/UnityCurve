@@ -5,11 +5,9 @@
 /*******************************************/
 using CalcEngine;
 using System.Collections.Generic;
-using UnityCurve.OdinSerializer;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
-
-
 
 /***************************************/
 /*                 ENUM                */
@@ -107,15 +105,10 @@ namespace UnityCurve {
         /// value and Value can never be lower 
         /// than it.
         /// </summary>
-        [Space(10)]
         public double defaultValue = 0;
 
-        /// <summary>
-        /// This list contains all of the data
-        /// necessary to create a multi-function
-        /// curved parameter.
-        /// </summary>
-        public List<Curve> curves;
+        public UnityEvent activationEvent;
+        public UnityEvent deactivationEvent;
 
         /***************************************/
         /*              PROPERTIES             */
@@ -130,7 +123,11 @@ namespace UnityCurve {
         /// </summary>
         public CalcEngine.CalcEngine CalculationEngine { get; private set; }
 
-        public bool Active { get; private set; }
+        public bool Active { get { return CurrentCurve != null; } }
+
+        public Curve CurrentCurve { get; private set; } = null;
+
+        public Curve NextCurve { get { return CurrentCurve == null ? null : CurrentCurve.nextCurve; } }
 
         public double Value { get; private set; }
 
@@ -142,16 +139,6 @@ namespace UnityCurve {
         public double TotalCurveTime { get; private set; }
 
         public double CurrentCurveTime { get; private set; }
-
-        private int CurrentCurveIndex { get; set; } = FIRST_CURVE_INDEX;
-
-        private int NextCurveIndex { get { return CurrentCurveIndex + 1 >= curves.Count ? 0 : CurrentCurveIndex + 1; } }
-
-        public Curve CurrentCurve { get { return curves[CurrentCurveIndex]; } }
-
-        public Curve NextCurve { get { return curves[NextCurveIndex]; } }
-
-        private const int FIRST_CURVE_INDEX = 0;
 
 		/***************************************/
 		/*               METHODS               */
@@ -166,31 +153,46 @@ namespace UnityCurve {
             Value = defaultValue;
         }
 
-		public void Activate() {
-            Active = true;
+        public void Activate(Curve firstCurve) {
+            CurrentCurve = firstCurve;
             CurrentCurve.Activate();
+            CurrentCurveTime = 0;
+            TotalCurveTime = 0;
+            Value = defaultValue;
+            activationEvent.Invoke();
 		}
 
         public void Deactivate() {
-            Value = defaultValue;
             CurrentCurve.Deactivate();
-            CurrentCurveIndex = FIRST_CURVE_INDEX;
+            CurrentCurve = null;
             CurrentCurveTime = 0;
             TotalCurveTime = 0;
-            Active = false;
-		}
+            Value = defaultValue;
+            deactivationEvent.Invoke();
+        }
 
         public void ChangeToNextCurve() {
+            ChangeToCurve(NextCurve);
+        }
+
+        public void ChangeToCurve(Curve curveToChangeTo) {
             // Deactivate this UnityCurve once we hit start index
-            if (NextCurveIndex == FIRST_CURVE_INDEX) {
+            if (curveToChangeTo == null && Active) {
                 Deactivate();
             }
 
+            // Check if this UnityCurve has not been activated yet
+            if (curveToChangeTo != null && !Active) {
+                Activate(curveToChangeTo);
+			}
+
             // Normal case: deactivate current curve and activate next
-            CurrentCurve.Deactivate();
-            CurrentCurveIndex++;
-            CurrentCurve.Activate();
-            CurrentCurveTime = 0;
+            if (curveToChangeTo != null && Active) {
+                CurrentCurve.Deactivate();
+                CurrentCurve = curveToChangeTo;
+                CurrentCurve.Activate();
+                CurrentCurveTime = 0;
+            }
         }
 
         public void SetValue(double value) {
@@ -201,7 +203,7 @@ namespace UnityCurve {
             CurrentCurveTime += DeltaTime();
             TotalCurveTime += DeltaTime();
             Value += Calculate(expression);
-            Debug.Log("CI: " + CurrentCurveIndex + "  CCT:" + CurrentCurveTime + "  TCT:" + TotalCurveTime + "  V:" + Value);
+            //Debug.Log("CI: " + CurrentCurveIndex + "  CCT:" + CurrentCurveTime + "  TCT:" + TotalCurveTime + "  V:" + Value);
         }
 
 		/// <summary>

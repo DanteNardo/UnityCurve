@@ -9,31 +9,22 @@ using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 /*******************************************/
-/*                   ENUM                  */
-/*******************************************/
-namespace UnityCurve {
-	public enum InputActionCallbackType {
-		STARTED,
-		PERFORMED,
-		CANCELED
-	}
-}
-
-/*******************************************/
 /*                   CLASS                 */
 /*******************************************/
 namespace UnityCurve {
 	/// <summary>
 	/// 
 	/// </summary>
-	public class InputCurve : Curve {
+	[RequireComponent(typeof(UnityCurve))]
+	public class CurveTransition : MonoBehaviour {
 
 		/***************************************/
 		/*               MEMBERS               */
 		/***************************************/
 		public InputActionCallbackType callbackType;
 		public InputAction input;
-		public UnityEvent inputEvent;
+		public Curve curveToTransitionTo;
+		private UnityCurve unityCurve;
 
 		/***************************************/
 		/*              PROPERTIES             */
@@ -43,6 +34,10 @@ namespace UnityCurve {
 		/***************************************/
 		/*               METHODS               */
 		/***************************************/
+		public void Awake() {
+			unityCurve = GetComponent<UnityCurve>();
+		}
+
 		private void OnEnable() {
 			switch (callbackType) {
 				case InputActionCallbackType.STARTED:
@@ -78,11 +73,8 @@ namespace UnityCurve {
 		}
 
 		private void Invocation(InputAction.CallbackContext context) {
-			inputEvent.Invoke();
-		}
-
-		protected override void UpdateCurve() {
-			UpdateCurveValue();
+			Debug.Log("Phase:" + context.phase);
+			unityCurve.ChangeToCurve(curveToTransitionTo);
 		}
 
 		/***************************************/

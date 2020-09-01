@@ -244,7 +244,8 @@ namespace UnityCurve {
 		/// <param name="y">The y value to normalize.</param>
 		/// <returns>A normalized version of y relative to the graph height and max/min ADSR values.</returns>
 		private float NormalizeY(float y) {
-			return (float)(y - this.y.defaultValue) / MaxYHeight * gridRenderer.gridSize.y;
+			if (MaxYHeight == 0) return 1;
+			return (float)(y - LowestY) / MaxYHeight * gridRenderer.gridSize.y;
 		}
 
 		private void UpdateYAxisValues() {

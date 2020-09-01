@@ -285,11 +285,12 @@ GameObject:
   m_Component:
   - component: {fileID: 448711093}
   - component: {fileID: 448711092}
-  - component: {fileID: 448711096}
   - component: {fileID: 448711095}
   - component: {fileID: 448711098}
-  - component: {fileID: 448711097}
+  - component: {fileID: 448711096}
   - component: {fileID: 448711099}
+  - component: {fileID: 448711094}
+  - component: {fileID: 448711100}
   m_Layer: 0
   m_Name: ExampleUnityCurve
   m_TagString: Untagged
@@ -310,73 +311,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PARAMETER_NAME: X
-  UpdateType: 0
+  UpdateType: 1
   defaultValue: 0
-  curves:
-  - {fileID: 448711096}
-  - {fileID: 448711095}
-  - {fileID: 448711098}
-  - {fileID: 448711097}
-  - {fileID: 448711099}
---- !u!4 &448711093
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 448711091}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &448711095
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 448711091}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0e76699796824b4c834eda64ba88400, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  formula: POWER(X, 2)
-  target: 10
---- !u!114 &448711096
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 448711091}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb551af0ec6643248a68356e777074cf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  formula: 0
-  callbackType: 0
-  input:
-    m_Name: Input
-    m_Type: 1
-    m_ExpectedControlType: Button
-    m_Id: 3e0ecd3a-843f-49ef-8c32-9bd1a05c7de1
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: d390af9f-83fb-4526-b809-f99c72bebcc2
-      m_Path: <Keyboard>/0
-      m_Interactions: 
-      m_Processors: 
-      m_Groups: 
-      m_Action: Input
-      m_Flags: 0
-  inputEvent:
+  activationEvent:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 193404137}
@@ -391,31 +328,24 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 448711092}
-        m_TargetAssemblyTypeName: UnityCurve.UnityCurve, Assembly-CSharp
-        m_MethodName: Activate
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 448711092}
-        m_TargetAssemblyTypeName: UnityCurve.UnityCurve, Assembly-CSharp
-        m_MethodName: ChangeToNextCurve
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &448711097
+  deactivationEvent:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!4 &448711093
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 448711091}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &448711094
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -424,42 +354,56 @@ MonoBehaviour:
   m_GameObject: {fileID: 448711091}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb551af0ec6643248a68356e777074cf, type: 3}
+  m_Script: {fileID: 11500000, guid: fa2c75bba8166bf44bb6a70ff638291a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  formula: 0
-  callbackType: 2
+  callbackType: 0
   input:
     m_Name: Input
     m_Type: 1
     m_ExpectedControlType: Button
-    m_Id: 3337a975-7010-4ff1-8b83-65f8d5edd15f
+    m_Id: 2f298c67-9b2c-4ee5-a2ab-c49336fb1169
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: e7e996e2-e5ff-4e1a-99ec-78b26b301c0a
+      m_Id: 5355b6a2-7e50-4c0c-8ee7-5bf11c939644
       m_Path: <Keyboard>/0
       m_Interactions: 
       m_Processors: 
       m_Groups: 
       m_Action: Input
       m_Flags: 0
-  inputEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 448711092}
-        m_TargetAssemblyTypeName: UnityCurve.UnityCurve, Assembly-CSharp
-        m_MethodName: ChangeToNextCurve
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+  curveToTransitionTo: {fileID: 448711095}
+--- !u!114 &448711095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 448711091}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0e76699796824b4c834eda64ba88400, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  formula: POWER(X, 2)
+  nextCurve: {fileID: 448711098}
+  target: 10
+--- !u!114 &448711096
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 448711091}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9dd6e6c29be06b40aefd2428828976a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  formula: 
+  nextCurve: {fileID: 0}
 --- !u!114 &448711098
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -473,6 +417,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   formula: X - (X*1.5)
+  nextCurve: {fileID: 448711096}
   target: 8
 --- !u!114 &448711099
 MonoBehaviour:
@@ -487,7 +432,38 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   formula: -1 * POWER(X, 4)
+  nextCurve: {fileID: 0}
   target: 0
+--- !u!114 &448711100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 448711091}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa2c75bba8166bf44bb6a70ff638291a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  callbackType: 2
+  input:
+    m_Name: Input
+    m_Type: 1
+    m_ExpectedControlType: Button
+    m_Id: db8d5cd4-aca1-475f-ae17-c9d5abc4be4f
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings:
+    - m_Name: 
+      m_Id: ad43faa8-e6e2-431a-b799-56ef448b35f1
+      m_Path: <Keyboard>/0
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Input
+      m_Flags: 0
+  curveToTransitionTo: {fileID: 448711099}
 --- !u!1 &939088051
 GameObject:
   m_ObjectHideFlags: 0
