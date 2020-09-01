@@ -9,12 +9,12 @@ using System.Collections.Generic;
 /*                    CLASS                */
 /*******************************************/
 /// <summary>
-/// A  wrapper around a List<ADSRPoint>.
+/// A  wrapper around a List<CurvePoint>.
 /// The added functionality is an event that
 /// triggers every time the List<> is
 /// modified in some way.
 /// </summary>
-public class ADSRLine {
+public class CurvePoints {
 
 	/***************************************/
 	/*               MEMBERS               */
@@ -28,12 +28,12 @@ public class ADSRLine {
 	/// <summary>
 	/// The ADSR points that represent the line.
 	/// </summary>
-	public List<ADSRPoint> Points { get; private set; }
+	public List<CurvePoint> Points { get; private set; }
 
 	/// <summary>
 	/// A property that makes it easy to get the last point in the line.
 	/// </summary>
-	public ADSRPoint? LastPoint { 
+	public CurvePoint? LastPoint { 
 		get {
 			if (Points.Count == 0) return null;
 			return Points[Points.Count - 1]; 
@@ -46,14 +46,14 @@ public class ADSRLine {
 	/// <summary>
 	/// Constructor initializes points list.
 	/// </summary>
-	public ADSRLine() {
-		Points = new List<ADSRPoint>();
+	public CurvePoints() {
+		Points = new List<CurvePoint>();
 	}
 
 	/// <summary>
 	/// Adds a point to the line and alerts listeners to change.
 	/// </summary>
-	public void Add(ADSRPoint point) {
+	public void Add(CurvePoint point) {
 		Points.Add(point);
 		OnLineChange?.Invoke();
 	}
@@ -74,63 +74,55 @@ public class ADSRLine {
 /*******************************************/
 /// <summary>
 /// A simple struct that records all of the 
-/// important data in an ADSR envelope at a 
-/// specific point in time.
+/// important data in a Curve at a specific 
+/// point in time.
 /// </summary>
-public struct ADSRPoint {
+public struct CurvePoint {
 
 	/***************************************/
 	/*              PROPERTIES             */
 	/***************************************/
-	/// <summary>
-	/// The ADSR state at this point in the envelope.
-	/// </summary>
-	public ADSR_STATE State { get; private set; }
 
 	/// <summary>
-	/// The ADSR value at this point in the envelope.
+	/// The Curve value at this point in the envelope.
 	/// </summary>
 	public float Value { get; private set; }
 
 	/// <summary>
-	/// The ADSR total state time at this point in the envelope.
+	/// The total time at this point in the UnityCurve.
 	/// </summary>
 	public float TotalTime { get; private set; }
 
 	/// <summary>
-	/// The ADSR time at this point since the start of the most recent state.
+	/// The time at this point since the start of the most recent curve.
 	/// </summary>
-	public float StateTime { get; private set; }
+	public float CurveTime { get; private set; }
 
 	/***************************************/
 	/*               METHODS               */
 	/***************************************/
 	/// <summary>
-	/// Constructor that stores all ADSR values at a point in time.
+	/// Constructor that stores all Curve values at a point in time.
 	/// Makes it easier to not cast parameters to float every time constructor is called.
 	/// </summary>
-	/// <param name="state">The ADSR state at this point in the envelope.</param>
-	/// <param name="value">The ADSR value at this point in the envelope.</param>
-	/// <param name="totalTime">The ADSR total state time at this point in the envelope.</param>
-	/// <param name="stateTime">The ADSR time at this point since the start of the most recent state.</param>
-	public ADSRPoint(ADSR_STATE state, double value, double totalTime, double stateTime) {
-		State = state;
+	/// <param name="value">The Curve value at this point in the envelope.</param>
+	/// <param name="totalTime">The Curve total state time at this point in the envelope.</param>
+	/// <param name="stateTime">The Curve time at this point since the start of the most recent state.</param>
+	public CurvePoint(double value, double totalTime, double stateTime) {
 		Value = (float)value;
 		TotalTime = (float)totalTime;
-		StateTime = (float)stateTime;
+		CurveTime = (float)stateTime;
 	}
 
 	/// <summary>
-	/// Constructor that stores all ADSR values at a point in time.
+	/// Constructor that stores all Curve values at a point in time.
 	/// </summary>
-	/// <param name="state">The ADSR state at this point in the envelope.</param>
-	/// <param name="value">The ADSR value at this point in the envelope.</param>
-	/// <param name="totalTime">The ADSR total state time at this point in the envelope.</param>
-	/// <param name="stateTime">The ADSR time at this point since the start of the most recent state.</param>
-	public ADSRPoint(ADSR_STATE state, float value, float totalTime, float stateTime) {
-		State = state;
+	/// <param name="value">The Curve value at this point in the envelope.</param>
+	/// <param name="totalTime">The Curve total state time at this point in the envelope.</param>
+	/// <param name="stateTime">The Curve time at this point since the start of the most recent state.</param>
+	public CurvePoint(float value, float totalTime, float stateTime) {
 		Value = value;
 		TotalTime = totalTime;
-		StateTime = stateTime;
+		CurveTime = stateTime;
 	}
 }
