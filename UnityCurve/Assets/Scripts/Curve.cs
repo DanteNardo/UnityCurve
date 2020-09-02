@@ -1,16 +1,14 @@
 ﻿
 
-/*******************************************/
-/*                  INCLUDES               */
-/*******************************************/
+/***********************************************/
+/*                   INCLUDES                  */
+/***********************************************/
 using CalcEngine;
-using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-/*******************************************/
-/*                   CLASS                 */
-/*******************************************/
+/***********************************************/
+/*                     CLASS                   */
+/***********************************************/
 namespace UnityCurve {
 	/// <summary>
 	/// 
@@ -69,7 +67,7 @@ namespace UnityCurve {
 		protected abstract void UpdateCurve();
 
 		protected void UpdateCurveValue() {
-			unityCurve.UpdateValue(expression);
+			unityCurve.UpdateCurrentCurveValue(expression);
 		}
 
 		/***************************************/

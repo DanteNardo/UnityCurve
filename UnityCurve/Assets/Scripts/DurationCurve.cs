@@ -51,18 +51,16 @@ namespace UnityCurve {
 			}
 
 			// Check for overstepping duration
-			if (lastDuration < duration && unityCurve.Value > duration) {
-				unityCurve.SetValue(duration);
+			if (lastDuration < duration && unityCurve.CurrentCurveTime > duration) {
 				return true;
 			}
 			// Check for understepping duration
-			if (lastDuration > duration && unityCurve.Value < duration) {
-				unityCurve.SetValue(duration);
+			if (lastDuration > duration && unityCurve.CurrentCurveTime < duration) {
 				return true;
 			}
 
 			// Default return and update lastDuration
-			lastDuration = unityCurve.Value;
+			lastDuration = unityCurve.CurrentCurveTime;
 			return false;
 		}
 

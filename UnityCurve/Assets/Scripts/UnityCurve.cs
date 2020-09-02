@@ -16,6 +16,11 @@ namespace UnityCurve {
         FIXED_UPDATE,
         LATE_UPDATE
     }
+
+    public enum VALUE_TYPE {
+        ADDITIVE,
+        EQUALITIVE
+    }
 }
 
 /***********************************************/
@@ -127,7 +132,11 @@ namespace UnityCurve {
 
         public Curve NextCurve { get { return CurrentCurve == null ? null : CurrentCurve.nextCurve; } }
 
-        public double Value { get; private set; }
+        public double Value { get { return PreviousCurveValue + CurrentCurveValue; } }
+
+        private double PreviousCurveValue { get; set; }
+
+        private double CurrentCurveValue { get; set; }
 
         /// <summary>
         /// The total time that this UnityCurve 
@@ -148,7 +157,8 @@ namespace UnityCurve {
             CalculationEngine.Variables[PARAMETER_NAME] = 0;
 
             // Initialize Value
-            Value = defaultValue;
+            PreviousCurveValue = defaultValue;
+            CurrentCurveValue = 0;
         }
 
         public void Activate(Curve firstCurve) {
@@ -156,7 +166,8 @@ namespace UnityCurve {
             CurrentCurve.Activate();
             CurrentCurveTime = 0;
             TotalCurveTime = 0;
-            Value = defaultValue;
+            PreviousCurveValue = defaultValue;
+            CurrentCurveValue = 0;
             activationEvent.Invoke();
 		}
 
@@ -165,7 +176,8 @@ namespace UnityCurve {
             CurrentCurve = null;
             CurrentCurveTime = 0;
             TotalCurveTime = 0;
-            Value = defaultValue;
+            PreviousCurveValue = defaultValue;
+            CurrentCurveValue = 0;
             deactivationEvent.Invoke();
         }
 
@@ -186,22 +198,23 @@ namespace UnityCurve {
 
             // Normal case: deactivate current curve and activate next
             if (curveToChangeTo != null && Active) {
+                PreviousCurveValue = Value;
                 CurrentCurve.Deactivate();
                 CurrentCurve = curveToChangeTo;
                 CurrentCurve.Activate();
+                CurrentCurveValue = 0;
                 CurrentCurveTime = 0;
             }
         }
 
         public void SetValue(double value) {
-            Value = value;
+            CurrentCurveValue = value - PreviousCurveValue;
         }
 
-        public void UpdateValue(Expression expression) {
+        public void UpdateCurrentCurveValue(Expression expression) {
             CurrentCurveTime += DeltaTime();
             TotalCurveTime += DeltaTime();
-            Value += Calculate(expression);
-            //Debug.Log("CI: " + CurrentCurveIndex + "  CCT:" + CurrentCurveTime + "  TCT:" + TotalCurveTime + "  V:" + Value);
+            CurrentCurveValue = Calculate(expression);
         }
 
 		/// <summary>

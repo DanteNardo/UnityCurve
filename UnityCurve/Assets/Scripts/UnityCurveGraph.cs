@@ -209,17 +209,6 @@ namespace UnityCurve {
 		}
 
 		/// <summary>
-		/// Sets the correct duration and total time values in the UI for a static UnityCurve Graph.
-		/// </summary>
-		private void StaticTimeAnalysis() {
-			foreach (var point in Line.Points) {
-				UpdateYAxisValues(point);
-			}
-
-			UpdateAxises();
-		}
-
-		/// <summary>
 		/// Normalizes the X value of the graph.
 		/// </summary>
 		/// <param name="x">The x value to normalize.</param>
@@ -235,7 +224,7 @@ namespace UnityCurve {
 		/// <param name="y">The y value to normalize.</param>
 		/// <returns>A normalized version of y relative to the graph height and max/min ADSR values.</returns>
 		private float NormalizeY(float y) {
-			if (MaxYHeight == 0) return 1;
+			if (MaxYHeight == 0) return y * gridRenderer.gridSize.y;
 			return (float)(y - LowestY) / MaxYHeight * gridRenderer.gridSize.y;
 		}
 
