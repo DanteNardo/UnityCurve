@@ -24,16 +24,6 @@ namespace UnityCurve {
 		/***************************************/
 
 		/// <summary>
-		/// If true, the Graph will visualize the 
-		/// live ADSR envelope as it modulates.
-		/// If false, the Graph will visualize a 
-		/// still of the entire ADSR envelope.
-		/// </summary>
-		public bool realtime = true;
-
-		public float simulationInputTime = 0.5f;
-
-		/// <summary>
 		/// The y axis of the Graph is the value of the UnityCurve at a point in time (X).
 		/// </summary>
 		public UnityCurve y;
@@ -49,9 +39,9 @@ namespace UnityCurve {
 		public UILineRenderer lineRenderer;
 
 		/// <summary>
-		/// The color of the Attack portion of the line.
+		/// The color array for this graph.
 		/// </summary>
-		public Color color;
+		public Color[] colors;
 
 		/// <summary>
 		/// The UI element that renders the minimum value on the x axis.
@@ -87,8 +77,35 @@ namespace UnityCurve {
 		/// </summary>
 		private float MaxYHeight { get { return (float)(HighestY - LowestY); } }
 
+		/// <summary>
+		/// The highest Y value in the graph's line. Used for normalizing Y values.
+		/// </summary>
 		private double HighestY { get; set; }
+
+		/// <summary>
+		/// The lowest Y value in the graph's line. Used for normalizing Y values.
+		/// </summary>
 		private double LowestY { get; set; }
+
+		/// <summary>
+		/// The current color of the line when processing colors.
+		/// </summary>
+		private Color CurrentColor { get { return colors[CurrentColorIndex]; } }
+
+		/// <summary>
+		/// The next color along the line when processing colors.
+		/// </summary>
+		private Color NextColor { get { return colors[NextColorIndex]; } }
+
+		/// <summary>
+		/// Keeps track of the current color index when processing colors.
+		/// </summary>
+		private int CurrentColorIndex { get; set; }
+
+		/// <summary>
+		/// Keeps track of the next color index when processing colors.
+		/// </summary>
+		private int NextColorIndex { get { return CurrentColorIndex + 1 >= colors.Length ? 0 : CurrentColorIndex + 1; } }
 
 		/***************************************/
 		/*               METHODS               */
@@ -109,30 +126,19 @@ namespace UnityCurve {
 			// Prepare the Y axis variables
 			LowestY = y.defaultValue;
 			HighestY = y.defaultValue;
-
-			// If this is a static graph, set all data now
-			if (realtime == false) {
-				Line = y.Simulate(simulationInputTime);
-				StaticTimeAnalysis();
-				UpdateColorPoints();
-				UpdateRenderer();
-			}
 		}
 
 		/// <summary>
 		/// Updates the graph if the graph is a realtime graph.
 		/// </summary>
 		private void FixedUpdate() {
-			if (realtime) {
-				AddPoint();
-			}
+			AddPoint();
 		}
 
 		/// <summary>
 		/// Clears all graph data.
 		/// </summary>
 		public void Clear() {
-			// Clear line data
 			Line.Clear();
 			lineRenderer.Line.Clear();
 			lineRenderer.ColorPoints.Clear();
@@ -143,9 +149,7 @@ namespace UnityCurve {
 		/// </summary>
 		public void AddPoint() {
 			if (y.Active) {
-				Line.Add(new CurvePoint(y.Value, y.TotalCurveTime, y.CurrentCurveTime));
-				//attackDurationText.text = y.StateTime.ToString("0.##") + "s";
-				//attackTotalTimeText.text = y.TotalTime.ToString("0.##") + "s";
+				Line.Add(new CurvePoint(y.CurrentCurve, y.Value, y.TotalCurveTime, y.CurrentCurveTime));
 
 				// Update Axises
 				UpdateYAxisValues();
@@ -185,36 +189,23 @@ namespace UnityCurve {
 		/// Determines color transition points between different curves.
 		/// </summary>
 		private void UpdateColorPoints() {
-			//// Prepare variables for iteration and add initial color point
-			//CURVE_STATE lastState = CURVE_STATE.NONE;
-			//lineRenderer.ColorPoints.Clear();
-			//lineRenderer.ColorPoints.Add(new UIColorPoint(attackColor, 0));
+			// Prepare variables for iteration and add initial color point
+			Curve lastCurve = null;
+			CurrentColorIndex = colors.Length-1;
+			lineRenderer.ColorPoints.Clear();
+			lineRenderer.ColorPoints.Add(new UIColorPoint(CurrentColor, 0));
 
-			//// Iterate and create GradientKeys when state changes
-			//for (int i = 0; i < Line.Points.Count; i++) {
-			//	if (Line.Points[i].State != lastState) {
-			//		switch (Line.Points[i].State) {
-			//			case CURVE_STATE.DECAY:
-			//				lineRenderer.ColorPoints.Add(new UIColorPoint(attackColor, i - 1));
-			//				lineRenderer.ColorPoints.Add(new UIColorPoint(decayColor, i));
-			//				break;
-			//			case CURVE_STATE.SUSTAIN:
-			//				lineRenderer.ColorPoints.Add(new UIColorPoint(decayColor, i - 1));
-			//				lineRenderer.ColorPoints.Add(new UIColorPoint(sustainColor, i));
-			//				break;
-			//			case CURVE_STATE.RELEASE:
-			//				lineRenderer.ColorPoints.Add(new UIColorPoint(sustainColor, i - 1));
-			//				lineRenderer.ColorPoints.Add(new UIColorPoint(releaseColor, i));
-			//				break;
-			//			case CURVE_STATE.NONE:
-			//				lineRenderer.ColorPoints.Add(new UIColorPoint(releaseColor, i));
-			//				break;
-			//		}
-			//	}
+			// Create GradientKeys when the Curve along a UnityCurve changes
+			for (int i = 0; i < Line.Points.Count; i++) {
+				if (Line.Points[i].CurveAtPoint != lastCurve) {
+					lineRenderer.ColorPoints.Add(new UIColorPoint(CurrentColor, i - 1));
+					lineRenderer.ColorPoints.Add(new UIColorPoint(NextColor, i));
+					CurrentColorIndex = NextColorIndex;
+				}
 
-			//	// Update last state
-			//	lastState = Line.Points[i].State;
-			//}
+				// Update last curve
+				lastCurve = Line.Points[i].CurveAtPoint;
+			}
 		}
 
 		/// <summary>

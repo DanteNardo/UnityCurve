@@ -1,17 +1,15 @@
 ﻿
 
-/*******************************************/
-/*                  INCLUDES               */
-/*******************************************/
+/***********************************************/
+/*                   INCLUDES                  */
+/***********************************************/
 using CalcEngine;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.InputSystem;
 
-/***************************************/
-/*                 ENUM                */
-/***************************************/
+/***********************************************/
+/*                     ENUM                    */
+/***********************************************/
 namespace UnityCurve {
     public enum UPDATE_TYPES {
         UPDATE,
@@ -20,9 +18,9 @@ namespace UnityCurve {
     }
 }
 
-/*******************************************/
-/*                   CLASS                 */
-/*******************************************/
+/***********************************************/
+/*                     CLASS                   */
+/***********************************************/
 namespace UnityCurve {
     /// <summary>
     /// From Steve Swink's 'Game Feel' paradigm
@@ -230,9 +228,5 @@ namespace UnityCurve {
                     return 0;
             }
         }
-    
-        public CurvePoints Simulate(float inputTime) {
-            return null;
-		}
     }
 }

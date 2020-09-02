@@ -1,19 +1,19 @@
 ﻿
 
-/*******************************************/
-/*                  INCLUDES               */
-/*******************************************/
-using System;
+/***********************************************/
+/*                   INCLUDES                  */
+/***********************************************/
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
-/*******************************************/
-/*                   CLASS                 */
-/*******************************************/
+/***********************************************/
+/*                     CLASS                   */
+/***********************************************/
 namespace UnityCurve {
 	/// <summary>
-	/// 
+	/// This class is useful for when you want to
+	/// transition a UnityCurve from one curve to 
+	/// any other curve based on input.
 	/// </summary>
 	[RequireComponent(typeof(UnityCurve))]
 	public class CurveTransition : MonoBehaviour {
@@ -73,7 +73,6 @@ namespace UnityCurve {
 		}
 
 		private void Invocation(InputAction.CallbackContext context) {
-			Debug.Log("Phase:" + context.phase);
 			unityCurve.ChangeToCurve(curveToTransitionTo);
 		}
 
