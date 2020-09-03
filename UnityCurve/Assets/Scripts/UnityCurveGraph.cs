@@ -1,15 +1,15 @@
 ﻿
 
-/*******************************************/
-/*                  INCLUDES               */
-/*******************************************/
+/***********************************************/
+/*                   INCLUDES                  */
+/***********************************************/
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-/*******************************************/
-/*                   CLASS                 */
-/*******************************************/
+/***********************************************/
+/*                     CLASS                   */
+/***********************************************/
 /// <summary>
 /// A robust script for controlling UI graph
 /// elements and rendering an CurvePoints that
@@ -70,7 +70,7 @@ namespace UnityCurve {
 		/// <summary>
 		/// The line data of all the points in the ADSR envelope. Rendered by UILineRenderer.
 		/// </summary>
-		private CurvePoints Line { get; set; }
+		public CurvePoints Line { get; private set; }
 
 		/// <summary>
 		/// A necessary variable for normalizing the y values of the graph.
