@@ -582,6 +582,7 @@ MonoBehaviour:
   y: {fileID: 0}
   gridRenderer: {fileID: 6616934646517093570}
   lineRenderer: {fileID: 6616934646841128554}
+  graphFields: {fileID: 337573768798152067}
   colors: []
   xAxisMinimumText: {fileID: 4819964284473118396}
   xAxisMaximumText: {fileID: 8388042032343456141}

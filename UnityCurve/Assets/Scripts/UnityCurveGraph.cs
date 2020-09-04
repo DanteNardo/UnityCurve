@@ -6,17 +6,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System.ComponentModel;
 
 /***********************************************/
 /*                     CLASS                   */
 /***********************************************/
-/// <summary>
-/// A robust script for controlling UI graph
-/// elements and rendering an CurvePoints that
-/// is created by a UnityCurve. This 
-/// graph is primarily for debugging.
-/// </summary>
 namespace UnityCurve {
+	/// <summary>
+	/// A robust script for controlling UI graph
+	/// elements and rendering CurvePoints that
+	/// are created by a UnityCurve. This graph 
+	/// is primarily for debugging or visual
+	/// feedback while creating curves.
+	/// </summary>
 	public class UnityCurveGraph : MonoBehaviour {
 
 		/***************************************/
@@ -37,6 +39,11 @@ namespace UnityCurve {
 		/// The line renderer for this graph.
 		/// </summary>
 		public UILineRenderer lineRenderer;
+
+		/// <summary>
+		/// The container for the UnityCurve graph fields.
+		/// </summary>
+		public UnityCurveGraphFields graphFields;
 
 		/// <summary>
 		/// The color array for this graph.
@@ -117,7 +124,7 @@ namespace UnityCurve {
 		private void Start() {
 			// Instantiate new graph line variables
 			Line = new CurvePoints();
-			Line.OnLineChange += UpdateColorPoints;
+			Line.OnLineChange += UpdateColors;
 			Line.OnLineChange += UpdateRenderer;
 
 			// Clear and set all data to empty
@@ -142,6 +149,7 @@ namespace UnityCurve {
 			Line.Clear();
 			lineRenderer.Line.Clear();
 			lineRenderer.ColorPoints.Clear();
+			graphFields.Clear();
 		}
 
 		/// <summary>
@@ -165,6 +173,42 @@ namespace UnityCurve {
 		}
 
 		/// <summary>
+		/// Records points where the line color should change on the graph.
+		/// Determines color transition points between different curves.
+		/// </summary>
+		private void UpdateColors() {
+			// Don't update colors if less than two points
+			if (Line.Points.Count < 2) {
+				return;
+			}
+
+			// Prepare variables for iteration and add initial color point
+			int curveCount = 0;
+			Curve lastCurve = null;
+			UnityCurveGraphField field = null;
+			CurrentColorIndex = colors.Length - 1;
+			lineRenderer.ColorPoints.Clear();
+			lineRenderer.ColorPoints.Add(new UIColorPoint(CurrentColor, 0));
+
+			// Create GradientKeys when the Curve along a UnityCurve changes
+			for (int i = 1; i < Line.Points.Count; i++) {
+				if (Line.Points[i].CurveAtPoint != lastCurve) {
+					curveCount++;
+					lineRenderer.ColorPoints.Add(new UIColorPoint(CurrentColor, i - 1));
+					lineRenderer.ColorPoints.Add(new UIColorPoint(NextColor, i));
+					field = graphFields.GetCurveField(Line.Points[i].CurveAtPoint, curveCount);
+					field.SetColor(NextColor);
+					field.SetDuration(Line.Points[i].CurveTime.ToString("0.##") + "s");
+					field.SetTotalTime(Line.Points[i].TotalTime.ToString("0.##") + "s");
+					CurrentColorIndex = NextColorIndex;
+				}
+
+				// Update last curve
+				lastCurve = Line.Points[i].CurveAtPoint;
+			}
+		}
+
+		/// <summary>
 		/// Converts the CurvePoints values to a normalized structure for the UILineRenderer.
 		/// </summary>
 		/// <returns>A list of Vector2 points for the UILineRenderer.</returns>
@@ -182,30 +226,6 @@ namespace UnityCurve {
 
 			// Return value
 			return graphPoints;
-		}
-
-		/// <summary>
-		/// Records points where the line color should change on the graph.
-		/// Determines color transition points between different curves.
-		/// </summary>
-		private void UpdateColorPoints() {
-			// Prepare variables for iteration and add initial color point
-			Curve lastCurve = null;
-			CurrentColorIndex = colors.Length-1;
-			lineRenderer.ColorPoints.Clear();
-			lineRenderer.ColorPoints.Add(new UIColorPoint(CurrentColor, 0));
-
-			// Create GradientKeys when the Curve along a UnityCurve changes
-			for (int i = 0; i < Line.Points.Count; i++) {
-				if (Line.Points[i].CurveAtPoint != lastCurve) {
-					lineRenderer.ColorPoints.Add(new UIColorPoint(CurrentColor, i - 1));
-					lineRenderer.ColorPoints.Add(new UIColorPoint(NextColor, i));
-					CurrentColorIndex = NextColorIndex;
-				}
-
-				// Update last curve
-				lastCurve = Line.Points[i].CurveAtPoint;
-			}
 		}
 
 		/// <summary>
