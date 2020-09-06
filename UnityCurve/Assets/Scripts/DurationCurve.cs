@@ -1,25 +1,37 @@
 ﻿
 
-/*******************************************/
-/*                  INCLUDES               */
-/*******************************************/
-using System;
+/***********************************************/
+/*                   INCLUDES                  */
+/***********************************************/
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-/*******************************************/
-/*                   CLASS                 */
-/*******************************************/
+/***********************************************/
+/*                     CLASS                   */
+/***********************************************/
 namespace UnityCurve {
 	/// <summary>
-	/// 
+	/// This Curve will transition to the next
+	/// curve once a number of seconds equal
+	/// to the public duration value have passed.
 	/// </summary>
 	public class DurationCurve : Curve {
 
 		/***************************************/
 		/*               MEMBERS               */
 		/***************************************/
+
+		/// <summary>
+		/// The time in seconds that must pass
+		/// once this curve is activated in order
+		/// to change to the next curve.
+		/// </summary>
 		public double duration;
+
+		/// <summary>
+		/// This variable is necessary in case
+		/// the total duration oversteps the
+		/// target duration.
+		/// </summary>
 		private double lastDuration;
 
 		/***************************************/
@@ -30,6 +42,10 @@ namespace UnityCurve {
 		/***************************************/
 		/*               METHODS               */
 		/***************************************/
+
+		/// <summary>
+		/// A workaround to prevent an initial duration overstep.
+		/// </summary>
 		private void Start() {
 			// This is needed to make sure we don't 
 			// accidentally trigger the overstep
@@ -37,6 +53,9 @@ namespace UnityCurve {
 			lastDuration = duration;
 		}
 
+		/// <summary>
+		/// Updates the curve value and triggers the ChangeToNextCurve function once duration time has passed.
+		/// </summary>
 		protected override void UpdateCurve() {
 			UpdateCurveValue();
 
@@ -45,6 +64,10 @@ namespace UnityCurve {
 			}
 		}
 
+		/// <summary>
+		/// Determines if the duration in seconds has passed.
+		/// </summary>
+		/// <returns>True if duration seconds has passed, else false.</returns>
 		public bool DurationHit() {
 			if (Mathf.Approximately((float)duration, (float)unityCurve.CurrentCurveTime)) {
 				return true;

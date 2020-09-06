@@ -19,21 +19,24 @@ namespace UnityCurve {
 		public Image fieldColor;
 		public TMP_Text fieldDurationText;
 		public TMP_Text fieldTotalTimeText;
+		private Curve fieldCurve;
 
 		/***************************************/
 		/*              PROPERTIES             */
 		/***************************************/
-		public Curve FieldCurve { get; set; }
+		public Curve FieldCurve {
+			get { return fieldCurve; }
+			set {
+				fieldCurve = value;
+				fieldColor.color = fieldCurve.curveColor;
+			}
+		}
 
 		/***************************************/
 		/*               METHODS               */
 		/***************************************/
 		private void Awake() {
 			fieldColor = GetComponentInChildren<Image>();
-		}
-
-		public void SetColor(Color color) {
-			fieldColor.color = color;
 		}
 
 		public void SetDuration(string text) {

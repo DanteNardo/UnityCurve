@@ -46,11 +46,6 @@ namespace UnityCurve {
 		public UnityCurveGraphFields graphFields;
 
 		/// <summary>
-		/// The color array for this graph.
-		/// </summary>
-		public Color[] colors;
-
-		/// <summary>
 		/// The UI element that renders the minimum value on the x axis.
 		/// </summary>
 		public TMP_Text xAxisMinimumText;
@@ -93,26 +88,6 @@ namespace UnityCurve {
 		/// The lowest Y value in the graph's line. Used for normalizing Y values.
 		/// </summary>
 		private double LowestY { get; set; }
-
-		/// <summary>
-		/// The current color of the line when processing colors.
-		/// </summary>
-		private Color CurrentColor { get { return colors[CurrentColorIndex]; } }
-
-		/// <summary>
-		/// The next color along the line when processing colors.
-		/// </summary>
-		private Color NextColor { get { return colors[NextColorIndex]; } }
-
-		/// <summary>
-		/// Keeps track of the current color index when processing colors.
-		/// </summary>
-		private int CurrentColorIndex { get; set; }
-
-		/// <summary>
-		/// Keeps track of the next color index when processing colors.
-		/// </summary>
-		private int NextColorIndex { get { return CurrentColorIndex + 1 >= colors.Length ? 0 : CurrentColorIndex + 1; } }
 
 		/***************************************/
 		/*               METHODS               */
@@ -186,21 +161,21 @@ namespace UnityCurve {
 			int curveCount = 0;
 			Curve lastCurve = null;
 			UnityCurveGraphField field = null;
-			CurrentColorIndex = colors.Length - 1;
 			lineRenderer.ColorPoints.Clear();
-			lineRenderer.ColorPoints.Add(new UIColorPoint(CurrentColor, 0));
+			lineRenderer.ColorPoints.Add(new UIColorPoint(Line.Points[0].CurveAtPoint.curveColor, 0));
 
 			// Create GradientKeys when the Curve along a UnityCurve changes
 			for (int i = 1; i < Line.Points.Count; i++) {
 				if (Line.Points[i].CurveAtPoint != lastCurve) {
 					curveCount++;
-					lineRenderer.ColorPoints.Add(new UIColorPoint(CurrentColor, i - 1));
-					lineRenderer.ColorPoints.Add(new UIColorPoint(NextColor, i));
+					lineRenderer.ColorPoints.Add(new UIColorPoint(Line.Points[i - 1].CurveAtPoint.curveColor, i - 1));
+					lineRenderer.ColorPoints.Add(new UIColorPoint(Line.Points[i].CurveAtPoint.curveColor, i));
 					field = graphFields.GetCurveField(Line.Points[i].CurveAtPoint, curveCount);
-					field.SetColor(NextColor);
 					field.SetDuration(Line.Points[i].CurveTime.ToString("0.##") + "s");
 					field.SetTotalTime(Line.Points[i].TotalTime.ToString("0.##") + "s");
-					CurrentColorIndex = NextColorIndex;
+				}
+				else {
+					field.SetDuration(Line.Points[i].CurveTime.ToString("0.##") + "s");
 				}
 
 				// Update last curve

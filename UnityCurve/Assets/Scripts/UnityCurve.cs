@@ -11,15 +11,26 @@ using UnityEngine.Events;
 /*                     ENUM                    */
 /***********************************************/
 namespace UnityCurve {
+
+    /// <summary>
+    /// Determines how frequently a UnityCurve 
+    /// is updated by the game engine.
+    /// </summary>
     public enum UPDATE_TYPES {
         UPDATE,
         FIXED_UPDATE,
         LATE_UPDATE
     }
 
-    public enum VALUE_TYPE {
-        ADDITIVE,
-        EQUALITIVE
+    /// <summary>
+    /// Determines which input callback is used
+    /// when invocating functions inside of
+    /// InputCurves and CurveTransitions.
+    /// </summary>
+    public enum INPUT_CALLBACK {
+        STARTED,
+        PERFORMED,
+        CANCELED
     }
 }
 

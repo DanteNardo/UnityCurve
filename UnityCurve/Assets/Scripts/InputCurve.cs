@@ -1,27 +1,14 @@
 ﻿
 
-/*******************************************/
-/*                  INCLUDES               */
-/*******************************************/
-using System;
-using UnityEngine;
+/***********************************************/
+/*                   INCLUDES                  */
+/***********************************************/
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
-/*******************************************/
-/*                   ENUM                  */
-/*******************************************/
-namespace UnityCurve {
-	public enum InputActionCallbackType {
-		STARTED,
-		PERFORMED,
-		CANCELED
-	}
-}
-
-/*******************************************/
-/*                   CLASS                 */
-/*******************************************/
+/***********************************************/
+/*                     CLASS                   */
+/***********************************************/
 namespace UnityCurve {
 	/// <summary>
 	/// 
@@ -31,7 +18,7 @@ namespace UnityCurve {
 		/***************************************/
 		/*               MEMBERS               */
 		/***************************************/
-		public InputActionCallbackType callbackType;
+		public INPUT_CALLBACK callbackType;
 		public InputAction input;
 		public UnityEvent inputEvent;
 
@@ -45,15 +32,15 @@ namespace UnityCurve {
 		/***************************************/
 		private void OnEnable() {
 			switch (callbackType) {
-				case InputActionCallbackType.STARTED:
+				case INPUT_CALLBACK.STARTED:
 					input.started += Invocation;
 					input.Enable();
 					break;
-				case InputActionCallbackType.PERFORMED:
+				case INPUT_CALLBACK.PERFORMED:
 					input.performed += Invocation;
 					input.Enable();
 					break;
-				case InputActionCallbackType.CANCELED:
+				case INPUT_CALLBACK.CANCELED:
 					input.canceled += Invocation;
 					input.Enable();
 					break;
@@ -62,15 +49,15 @@ namespace UnityCurve {
 
 		private void OnDisable() {
 			switch (callbackType) {
-				case InputActionCallbackType.STARTED:
+				case INPUT_CALLBACK.STARTED:
 					input.started -= Invocation;
 					input.Disable();
 					break;
-				case InputActionCallbackType.PERFORMED:
+				case INPUT_CALLBACK.PERFORMED:
 					input.performed -= Invocation;
 					input.Disable();
 					break;
-				case InputActionCallbackType.CANCELED:
+				case INPUT_CALLBACK.CANCELED:
 					input.canceled -= Invocation;
 					input.Disable();
 					break;

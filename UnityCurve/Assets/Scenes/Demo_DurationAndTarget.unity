@@ -180,7 +180,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: UI Demo
+  m_text: Duration & Target
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -594,7 +594,7 @@ PrefabInstance:
     - target: {fileID: 6616934647501095070, guid: 67fec3a31fecf8d4d923cb2b4a0d4cd0,
         type: 3}
       propertyPath: m_text
-      value: Target Curve Example
+      value: Target Curves
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 67fec3a31fecf8d4d923cb2b4a0d4cd0, type: 3}
@@ -907,11 +907,11 @@ RectTransform:
   m_Father: {fileID: 2110719649}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 10, y: -40}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 0, y: -40}
   m_SizeDelta: {x: 160, y: 375}
-  m_Pivot: {x: 0, y: 1}
+  m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1276538941
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -932,15 +932,23 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "This scene is primarily a tool for the developer to see the UI features
-    of this package. It includes two graphs: one static and one dynamic. \n\nThe
-    static graph will show a full simulation of the ADSR envelope based on the \"ADSR
-    Parameter\" object in this scene.\n\nThe dynamic graph will show a live simulation
-    of this same ADSR envelope as you hold down the '0' key on your keyboard or up
-    on the left stick of a gamepad.\n\nModify the public variables in the inspector
-    for the ADSR object to visualize different curves. You can even use this scene
-    to analyze or debug your equations. These two graph panel prefabs can be added
-    to any Unity UI."
+  m_text: 'This scene shows off the two most popular curve types: duration and target.
+
+
+    To
+    try out the demo for yourself, simply hold down the ''0'' key on your keyboard.
+    Both graphs should look identical since they both use the same curve equations.
+
+
+    The
+    duration curves change state based on time whereas the target curves change state
+    based on the Y value.
+
+
+    One developer may wish to curve the parameter for
+    100 milliseconds while another might wish to hit a Y value of 10 at an exponential
+    rate. This makes UnityCurve more flexible than if you were forced to calculate
+    what time exactly POWER(X, 4) hits a Y value of 10 and putting that in an inspector.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1024,12 +1032,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 926389015}
     m_Modifications:
-    - target: {fileID: 337573768798152067, guid: 67fec3a31fecf8d4d923cb2b4a0d4cd0,
-        type: 3}
-      propertyPath: unityCurveFieldPrefab
-      value: 
-      objectReference: {fileID: 4045034867639198462, guid: 1968f2ced64d2584f96351b24789da02,
-        type: 3}
     - target: {fileID: 2442670388868460786, guid: 67fec3a31fecf8d4d923cb2b4a0d4cd0,
         type: 3}
       propertyPath: colors.Array.size
@@ -1268,7 +1270,7 @@ PrefabInstance:
     - target: {fileID: 6616934647501095070, guid: 67fec3a31fecf8d4d923cb2b4a0d4cd0,
         type: 3}
       propertyPath: m_text
-      value: Duration Curve Example
+      value: Duration Curves
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 67fec3a31fecf8d4d923cb2b4a0d4cd0, type: 3}
