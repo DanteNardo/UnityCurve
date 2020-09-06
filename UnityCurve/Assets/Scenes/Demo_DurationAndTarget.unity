@@ -596,6 +596,11 @@ PrefabInstance:
       propertyPath: m_text
       value: Target Curves
       objectReference: {fileID: 0}
+    - target: {fileID: 6639089363546125587, guid: 67fec3a31fecf8d4d923cb2b4a0d4cd0,
+        type: 3}
+      propertyPath: y
+      value: 
+      objectReference: {fileID: 1835523448}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 67fec3a31fecf8d4d923cb2b4a0d4cd0, type: 3}
 --- !u!224 &699109871 stripped
@@ -604,18 +609,6 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 699109870}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &699109872 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2442670388868460786, guid: 67fec3a31fecf8d4d923cb2b4a0d4cd0,
-    type: 3}
-  m_PrefabInstance: {fileID: 699109870}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e2aea8868de29e46a06e47de7fe7895, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &779760471
 GameObject:
   m_ObjectHideFlags: 0
@@ -711,6 +704,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   formula: -1 * POWER(X, 2)
   nextCurve: {fileID: 779760475}
+  curveColor: {r: 1, g: 0.5019608, b: 0, a: 1}
   duration: 2
 --- !u!114 &779760475
 MonoBehaviour:
@@ -726,6 +720,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   formula: POWER(X, 2)
   nextCurve: {fileID: 779760474}
+  curveColor: {r: 0, g: 0, b: 1, a: 1}
   duration: 2
 --- !u!114 &779760476
 MonoBehaviour:
@@ -745,7 +740,7 @@ MonoBehaviour:
   activationEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1342437880}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: UnityCurve.UnityCurveGraph, Assembly-CSharp
         m_MethodName: Clear
         m_Mode: 1
@@ -1272,6 +1267,11 @@ PrefabInstance:
       propertyPath: m_text
       value: Duration Curves
       objectReference: {fileID: 0}
+    - target: {fileID: 6639089363546125587, guid: 67fec3a31fecf8d4d923cb2b4a0d4cd0,
+        type: 3}
+      propertyPath: y
+      value: 
+      objectReference: {fileID: 779760476}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 67fec3a31fecf8d4d923cb2b4a0d4cd0, type: 3}
 --- !u!224 &1300269014 stripped
@@ -1280,18 +1280,6 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 1300269013}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1342437880 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2442670388868460786, guid: 67fec3a31fecf8d4d923cb2b4a0d4cd0,
-    type: 3}
-  m_PrefabInstance: {fileID: 1300269013}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e2aea8868de29e46a06e47de7fe7895, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1397705693
 GameObject:
   m_ObjectHideFlags: 0
@@ -1464,7 +1452,6 @@ GameObject:
   - component: {fileID: 1529316176}
   - component: {fileID: 1529316173}
   - component: {fileID: 1529316175}
-  - component: {fileID: 1529316174}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1515,22 +1502,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!114 &1529316174
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1529316172}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 166e2025eefc92244863030963b0f27b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  offset: {x: 0, y: 0, z: 0}
-  smoothTime: 0.5
-  zoomSpeed: 10
-  bufferPercent: 10
 --- !u!81 &1529316175
 AudioListener:
   m_ObjectHideFlags: 0
@@ -1592,7 +1563,7 @@ MonoBehaviour:
   activationEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 699109872}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: UnityCurve.UnityCurveGraph, Assembly-CSharp
         m_MethodName: Clear
         m_Mode: 1
@@ -1681,6 +1652,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   formula: -1 * POWER(X, 2)
   nextCurve: {fileID: 1835523453}
+  curveColor: {r: 1, g: 0.5019608, b: 0, a: 1}
   target: 0
 --- !u!114 &1835523453
 MonoBehaviour:
@@ -1696,6 +1668,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   formula: POWER(X, 2)
   nextCurve: {fileID: 1835523452}
+  curveColor: {r: 0, g: 0, b: 1, a: 1}
   target: 4
 --- !u!4 &1835523454
 Transform:

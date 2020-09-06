@@ -38,29 +38,11 @@ namespace UnityCurve {
 /*                     CLASS                   */
 /***********************************************/
 namespace UnityCurve {
+
     /// <summary>
-    /// From Steve Swink's 'Game Feel' paradigm
-    /// ----------------------------------------
-    /// "An ADSR envelope describes the 
-    /// modulation of a parameter over time, in 
-    /// four distinct phases."
-    /// ----------------------------------------
-    /// ATTACK:  The phase where the parameter
-    ///          moves from the default value to
-    ///          the highest point.
-    /// DECAY:   The phase where the parameter
-    ///          moves from the highest point to
-    ///          a sustainable point.
-    /// SUSTAIN: The phase where the parameter 
-    ///          stays at a constant value, most
-    ///          commonly the longest phase.
-    /// RELEASE: The phase where the parameter
-    ///          moves from the sustained value 
-    ///          back to the default value.
-    /// ----------------------------------------
-    /// The point of this class is to easily
-    /// add curves of varying shapes to the
-    /// modulation of a value based on input.
+    /// The point of this class is to easily add
+    /// continuous curves of varying shapes to
+    /// the modulation of a value based on input.
     /// Purely linear increases and decreases
     /// in a car's driving force is not great
     /// game feel. This gives developers fast
@@ -76,31 +58,18 @@ namespace UnityCurve {
         /***************************************/
 
         /// <summary>
-        /// This is a reference to an asset
-        /// that is created as a part of the
-        /// 2019+ Unity Input system. Most games
-        /// will have a custom one that you use.
-        /// HOWEVER, the default version of this
-        /// script simply looks for a given 
-        /// InputAction. You may modify it to 
-        /// use an asset if that is how your 
-        /// game is set up.
-        /// </summary>
-        //public InputActions inputActions;
-
-        /// <summary>
         /// Named like a constant to enforce not
         /// changing, but accessible in inspector.
         /// 
         /// YOU MUST CHANGE THE STRING IN YOUR 
-        /// ADSR FORMULAS TO MATCH IF YOU CHANGE
+        /// CURVE FORMULAS TO MATCH IF YOU CHANGE
         /// THIS VARIABLE'S VALUE.
         /// 
-        /// AND THIS PARAMETER CANNOT BE A NAME
-        /// FOR ANY BUILT-IN EXCEL FUNCTION. IF
-        /// IT IS, YOU WILL GET A CALCENGINE
-        /// ERROR SAYING THERE ARE TOO FEW 
-        /// PARAMETERS.
+        /// This parameter cannot be a name
+        /// for any built-in Excel function. If
+        /// it is, you will get a CalcEngine
+        /// error saying there are too few
+        /// parameters.
         /// </summary>
         public string PARAMETER_NAME = "X";
 
@@ -108,8 +77,7 @@ namespace UnityCurve {
         /// This determines which update method 
         /// this variable uses. Consequently, it 
         /// also determines which type of 
-        /// deltaTime to use for our time 
-        /// recordings.
+        /// deltaTime to use for our time changes.
         /// </summary>
         public UPDATE_TYPES UpdateType = UPDATE_TYPES.UPDATE;
 
@@ -121,7 +89,16 @@ namespace UnityCurve {
         /// </summary>
         public double defaultValue = 0;
 
+        /// <summary>
+        /// A utility unityEvent that is invoked
+        /// when this UnityCurve is activated.
+        /// </summary>
         public UnityEvent activationEvent;
+
+        /// <summary>
+        /// A utility unityEvent that is invoked
+        /// when this UnityCurve is deactivated.
+        /// </summary>
         public UnityEvent deactivationEvent;
 
         /***************************************/
@@ -137,16 +114,45 @@ namespace UnityCurve {
         /// </summary>
         public CalcEngine.CalcEngine CalculationEngine { get; private set; }
 
+        /// <summary>
+        /// Determines whether or not this 
+        /// UnityCurve is actively updating or
+        /// is the default value.
+        /// </summary>
         public bool Active { get { return CurrentCurve != null; } }
 
+        /// <summary>
+        /// Null, unless this UnityCurve is active
+        /// in which case it is the current
+        /// active curve on this UnityCurve.
+        /// </summary>
         public Curve CurrentCurve { get; private set; } = null;
 
+        /// <summary>
+        /// Null, unless this UnityCurve is active
+        /// in which case it is the curve that will
+        /// be transitioned to next if the current
+        /// curve's transition condition is met.
+        /// </summary>
         public Curve NextCurve { get { return CurrentCurve == null ? null : CurrentCurve.nextCurve; } }
 
+        /// <summary>
+        /// The current Value of this UnityCurve 
+        /// based on any previously active curves
+        /// and the current active curve.
+        /// </summary>
         public double Value { get { return PreviousCurveValue + CurrentCurveValue; } }
 
+        /// <summary>
+        /// A necessary variable to make Value
+        /// continous across Curve changes.
+        /// </summary>
         private double PreviousCurveValue { get; set; }
 
+        /// <summary>
+        /// A necessary variable to make Value
+        /// continous across Curve changes.
+        /// </summary>
         private double CurrentCurveValue { get; set; }
 
         /// <summary>
@@ -156,12 +162,20 @@ namespace UnityCurve {
         /// </summary>
         public double TotalCurveTime { get; private set; }
 
+        /// <summary>
+        /// The total time that CurrentCurve 
+        /// has been active. Resets to 0 when
+        /// the CurrentCurve changes to NextCurve.
+        /// </summary>
         public double CurrentCurveTime { get; private set; }
 
 		/***************************************/
 		/*               METHODS               */
 		/***************************************/
 
+        /// <summary>
+        /// Initialize the calculation engine and UnityCurve values.
+        /// </summary>
 		private void Awake() {
             // Initialize calculation engine
             CalculationEngine = new CalcEngine.CalcEngine();
@@ -172,6 +186,11 @@ namespace UnityCurve {
             CurrentCurveValue = 0;
         }
 
+        /// <summary>
+        /// Activates this UnityCurve and begins curve modulation.
+        /// Initializes variables.
+        /// </summary>
+        /// <param name="firstCurve">The starting curve for this UnityCurve.</param>
         public void Activate(Curve firstCurve) {
             CurrentCurve = firstCurve;
             CurrentCurve.Activate();
@@ -182,6 +201,10 @@ namespace UnityCurve {
             activationEvent.Invoke();
 		}
 
+        /// <summary>
+        /// Dectivates this UnityCurve and ends curve modulation.
+        /// Resets all variables.
+        /// </summary>
         public void Deactivate() {
             CurrentCurve.Deactivate();
             CurrentCurve = null;
@@ -192,10 +215,17 @@ namespace UnityCurve {
             deactivationEvent.Invoke();
         }
 
+        /// <summary>
+        /// Syntactic sugar wrapped around ChangeToCurve.
+        /// </summary>
         public void ChangeToNextCurve() {
             ChangeToCurve(NextCurve);
         }
 
+        /// <summary>
+        /// Based on current state, either deactivates this UnityCurve, activates this UnityCurve, or switches to a curve while already active.
+        /// </summary>
+        /// <param name="curveToChangeTo">The desired curve to change to. If null, deactivates this UnityCurve.</param>
         public void ChangeToCurve(Curve curveToChangeTo) {
             // Deactivate this UnityCurve once we hit start index
             if (curveToChangeTo == null && Active) {
@@ -218,10 +248,18 @@ namespace UnityCurve {
             }
         }
 
+        /// <summary>
+        /// A function that overrides the CurrentValue. Usually used to set a value to be perfectly equal to a target instead of approximately equal.
+        /// </summary>
+        /// <param name="value">The desired value.</param>
         public void SetValue(double value) {
             CurrentCurveValue = value - PreviousCurveValue;
         }
 
+        /// <summary>
+        /// Updates the times and current curve value based on given expression.
+        /// </summary>
+        /// <param name="expression">The expression to use with CalcEngine to set CurrentCurveValue.</param>
         public void UpdateCurrentCurveValue(Expression expression) {
             CurrentCurveTime += DeltaTime();
             TotalCurveTime += DeltaTime();
@@ -241,6 +279,10 @@ namespace UnityCurve {
 			return (double)CalculationEngine.Evaluate(expression);
 		}
 
+        /// <summary>
+        /// A function that returns the correct DeltaTime based on this UnityCurve's UpdateType.
+        /// </summary>
+        /// <returns>Time.deltaTime or Time.fixedDeltaTime depending on UpdateType.</returns>
 		private float DeltaTime() {
             switch (UpdateType) {
                 case UPDATE_TYPES.UPDATE: return Time.deltaTime;

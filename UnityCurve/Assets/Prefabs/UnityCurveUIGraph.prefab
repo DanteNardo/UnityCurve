@@ -545,9 +545,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7001691851768874339}
-  - component: {fileID: 2442670388868460786}
+  - component: {fileID: 6639089363546125587}
   m_Layer: 0
-  m_Name: UnityCurveGraph
+  m_Name: UIGraph
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -567,7 +567,7 @@ Transform:
   m_Father: {fileID: 6616934647037448004}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2442670388868460786
+--- !u!114 &6639089363546125587
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -576,14 +576,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 6489410727358325089}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e2aea8868de29e46a06e47de7fe7895, type: 3}
+  m_Script: {fileID: 11500000, guid: 0fc4dbb74224e654194f42d1cfb28e01, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   y: {fileID: 0}
   gridRenderer: {fileID: 6616934646517093570}
   lineRenderer: {fileID: 6616934646841128554}
-  graphFields: {fileID: 337573768798152067}
-  colors: []
+  graphFields: {fileID: 2363065687819928850}
   xAxisMinimumText: {fileID: 4819964284473118396}
   xAxisMaximumText: {fileID: 8388042032343456141}
   yAxisMinimumText: {fileID: 1573394481232817524}
@@ -599,9 +598,9 @@ GameObject:
   - component: {fileID: 6616934645498982075}
   - component: {fileID: 6616934645498982073}
   - component: {fileID: 6616934645498982074}
-  - component: {fileID: 337573768798152067}
+  - component: {fileID: 2363065687819928850}
   m_Layer: 5
-  m_Name: GraphCurveFields
+  m_Name: UIGraphFields
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -664,7 +663,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &337573768798152067
+--- !u!114 &2363065687819928850
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -673,10 +672,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 6616934645498982052}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 651533f469a05274492321ed8785e337, type: 3}
+  m_Script: {fileID: 11500000, guid: a6fcd486a8fff334691367241630e493, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  graph: {fileID: 2442670388868460786}
+  graph: {fileID: 6639089363546125587}
   unityCurveFieldPrefab: {fileID: 4045034867639198462, guid: 1968f2ced64d2584f96351b24789da02,
     type: 3}
 --- !u!1 &6616934646134263588
@@ -691,7 +690,7 @@ GameObject:
   - component: {fileID: 6616934646134263609}
   - component: {fileID: 6616934646134263610}
   m_Layer: 5
-  m_Name: UIGraph
+  m_Name: UIGraphRendering
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1106,7 +1105,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: ADSR Envelope Debug Graph
+  m_text: Debug Graph
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

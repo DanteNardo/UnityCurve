@@ -6,12 +6,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using System.ComponentModel;
 
 /***********************************************/
 /*                     CLASS                   */
 /***********************************************/
-namespace UnityCurve {
+namespace UnityCurve.UI {
+
 	/// <summary>
 	/// A robust script for controlling UI graph
 	/// elements and rendering CurvePoints that
@@ -19,7 +19,7 @@ namespace UnityCurve {
 	/// is primarily for debugging or visual
 	/// feedback while creating curves.
 	/// </summary>
-	public class UnityCurveGraph : MonoBehaviour {
+	public class UIGraph : MonoBehaviour {
 
 		/***************************************/
 		/*               MEMBERS               */
@@ -43,7 +43,7 @@ namespace UnityCurve {
 		/// <summary>
 		/// The container for the UnityCurve graph fields.
 		/// </summary>
-		public UnityCurveGraphFields graphFields;
+		public UIGraphFields graphFields;
 
 		/// <summary>
 		/// The UI element that renders the minimum value on the x axis.
@@ -128,15 +128,13 @@ namespace UnityCurve {
 		}
 
 		/// <summary>
-		/// Adds a point to the graph based on current UnityCurve parameter status.
+		/// Adds a point to the graph based on current UnityCurve parameter status and updates axises.
 		/// </summary>
 		public void AddPoint() {
 			if (y.Active) {
 				Line.Add(new CurvePoint(y.CurrentCurve, y.Value, y.TotalCurveTime, y.CurrentCurveTime));
-
-				// Update Axises
 				UpdateYAxisValues();
-				UpdateAxises();
+				UpdateAxisText();
 			}
 		}
 
@@ -160,7 +158,7 @@ namespace UnityCurve {
 			// Prepare variables for iteration and add initial color point
 			int curveCount = 0;
 			Curve lastCurve = null;
-			UnityCurveGraphField field = null;
+			UIGraphField field = null;
 			lineRenderer.ColorPoints.Clear();
 			lineRenderer.ColorPoints.Add(new UIColorPoint(Line.Points[0].CurveAtPoint.curveColor, 0));
 
@@ -223,17 +221,18 @@ namespace UnityCurve {
 			return (float)(y - LowestY) / MaxYHeight * gridRenderer.gridSize.y;
 		}
 
+		/// <summary>
+		/// Updates lowest and highest Y values if necessary whenever the graph receives a new Point.
+		/// </summary>
 		private void UpdateYAxisValues() {
 			if (y.Value < LowestY) LowestY = y.Value;
 			if (y.Value > HighestY) HighestY = y.Value;
 		}
 
-		private void UpdateYAxisValues(CurvePoint point) {
-			if (point.Value < LowestY) LowestY = point.Value;
-			if (point.Value > HighestY) HighestY = point.Value;
-		}
-
-		private void UpdateAxises() {
+		/// <summary>
+		/// Updates the UI text that displays the X and Y axis min and max values.
+		/// </summary>
+		private void UpdateAxisText() {
 			xAxisMinimumText.text = "0.0s";
 			xAxisMaximumText.text = Line.LastPoint?.TotalTime.ToString("0.##") + "s";
 			yAxisMinimumText.text = LowestY.ToString("0.##");

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 /*                     CLASS                   */
 /***********************************************/
 namespace UnityCurve {
+
 	/// <summary>
 	/// A  wrapper around a List<CurvePoint>.
 	/// The added functionality is an event that
@@ -73,6 +74,7 @@ namespace UnityCurve {
 /*                     STRUCT                  */
 /***********************************************/
 namespace UnityCurve {
+
 	/// <summary>
 	/// A simple struct that records all of the 
 	/// important data in a Curve at a specific 

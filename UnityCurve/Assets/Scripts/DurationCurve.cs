@@ -9,6 +9,7 @@ using UnityEngine;
 /*                     CLASS                   */
 /***********************************************/
 namespace UnityCurve {
+
 	/// <summary>
 	/// This Curve will transition to the next
 	/// curve once a number of seconds equal

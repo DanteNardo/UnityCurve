@@ -9,6 +9,7 @@ using UnityEngine;
 /*                   CLASS                 */
 /*******************************************/
 namespace UnityCurve {
+
 	/// <summary>
 	/// A utility class that makes it easier to
 	/// set internal values for a RectTransform

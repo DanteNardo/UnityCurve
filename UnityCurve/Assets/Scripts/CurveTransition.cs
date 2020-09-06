@@ -10,6 +10,7 @@ using UnityEngine.InputSystem;
 /*                     CLASS                   */
 /***********************************************/
 namespace UnityCurve {
+
 	/// <summary>
 	/// This class is useful for when you want to
 	/// transition a UnityCurve from one curve to 
@@ -117,7 +118,7 @@ namespace UnityCurve {
 		/// regardless of whatever current curve
 		/// the UnityCurve is on.
 		/// </summary>
-		/// <param name="context"></param>
+		/// <param name="context">The inputAction context. This is required, but unused.</param>
 		private void Invocation(InputAction.CallbackContext context) {
 			unityCurve.ChangeToCurve(curveToTransitionTo);
 		}

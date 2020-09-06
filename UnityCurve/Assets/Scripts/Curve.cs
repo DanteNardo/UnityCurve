@@ -10,6 +10,7 @@ using UnityEngine;
 /*                     CLASS                   */
 /***********************************************/
 namespace UnityCurve {
+
 	/// <summary>
 	/// The abstract class that all curves inherit
 	/// from. A curve is a continuous function

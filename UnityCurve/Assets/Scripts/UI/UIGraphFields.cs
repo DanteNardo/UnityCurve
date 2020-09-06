@@ -9,41 +9,74 @@ using UnityEngine;
 /***********************************************/
 /*                     CLASS                   */
 /***********************************************/
-namespace UnityCurve {
+namespace UnityCurve.UI {
+
 	/// <summary>
-	/// 
+	/// This script controls the instantiation
+	/// and destruction of the UnityCurve fields.
 	/// </summary>
-	public class UnityCurveGraphFields : MonoBehaviour {
+	public class UIGraphFields : MonoBehaviour {
 
 		/***************************************/
 		/*               MEMBERS               */
 		/***************************************/
-		public UnityCurveGraph graph;
+
+		/// <summary>
+		/// A reference to the UIGraph
+		/// that needs access to the UnityCurve
+		/// graph fields.
+		/// </summary>
+		public UIGraph graph;
+
+		/// <summary>
+		/// A reference to the prefab that is
+		/// used to instantiate new curve fields.
+		/// </summary>
 		public GameObject unityCurveFieldPrefab;
 
+		/// <summary>
+		/// Constant variable for UI spacing
+		/// between curve fields.
+		/// </summary>
 		private const int SPACING = 10;
+
+		/// <summary>
+		/// Constant variable that represents
+		/// the height of the UI curve fields.
+		/// </summary>
 		private const int HEIGHT = 20;
 
 		/***************************************/
 		/*              PROPERTIES             */
 		/***************************************/
-		private List<UnityCurveGraphField> Fields { get; set; }
+
+		/// <summary>
+		/// A private list that contains all of
+		/// the currently active UI curve fields.
+		/// </summary>
+		private List<UIGraphField> Fields { get; set; }
 
 		/***************************************/
 		/*               METHODS               */
 		/***************************************/
+
+		/// <summary>
+		/// Instantiates the graph fields list.
+		/// </summary>
 		private void Awake() {
-			Fields = new List<UnityCurveGraphField>();
+			Fields = new List<UIGraphField>();
 		}
 
+		/// <summary>
+		/// Clears the dynamic graph fields.
+		/// </summary>
 		private void OnDestroy() {
 			Clear();
 		}
 
-		private void Update() {
-			UpdateGraphFields();
-		}
-
+		/// <summary>
+		/// Destroys the field gameobjects and clears the fields list.
+		/// </summary>
 		public void Clear() {
 			foreach (var field in Fields) {
 				Destroy(field.gameObject);
@@ -51,42 +84,29 @@ namespace UnityCurve {
 			Fields.Clear();
 		}
 
-		private void UpdateGraphFields() {
-			//// Not enough points for a field
-			//if (graph.Line.Points.Count < 2) {
-			//	return;
-			//}
-			
-			//// EXPLAIN! EXPLAAAAAAIN!
-			//int curveCount = 1;
-
-			//// Add first curve field if it doesn't already exist
-			//if (curveCount > Fields.Count) {
-			//	InstantiateCurveField(graph.Line.Points[0].CurveAtPoint);
-			//}
-
-			//// Iterate and create more curve fields if necessary
-			//for (int i = 1; i < graph.Line.Points.Count; i++) {
-			//	if (CurveChangedInLine(i)) {
-			//		curveCount++;
-			//		if (NeedToInstantiate(curveCount)) {
-			//			InstantiateCurveField(graph.Line.Points[i].CurveAtPoint);
-			//		}
-			//	}
-			//}
-		}
-
-		public UnityCurveGraphField GetCurveField(Curve curve, int neededCurves) {
+		/// <summary>
+		/// Gets the curve field associated with the parameter curve.
+		/// Instantiates a curve field if necessary.
+		/// </summary>
+		/// <param name="curve">The curve we want a field for.</param>
+		/// <param name="neededCurves">The amount of curves we need.</param>
+		/// <returns></returns>
+		public UIGraphField GetCurveField(Curve curve, int neededCurves) {
 			if (NeedToInstantiate(neededCurves)) {
 				return InstantiateCurveField(curve);
 			}
 			else return Fields[neededCurves - 1];
 		}
 
-		private UnityCurveGraphField InstantiateCurveField(Curve curve) {
+		/// <summary>
+		/// Instantiates a curve field UI object and adds it to the list.
+		/// </summary>
+		/// <param name="curve">The curve attached to this curve field.</param>
+		/// <returns>The instantated gameobject's UIGraphField component.</returns>
+		private UIGraphField InstantiateCurveField(Curve curve) {
 			// Instantiate and get components
 			var field = Instantiate(unityCurveFieldPrefab);
-			var fieldComponent = field.GetComponent<UnityCurveGraphField>();
+			var fieldComponent = field.GetComponent<UIGraphField>();
 			var rectComponent = field.GetComponent<RectTransform>();
 
 			// Update CurveField position, size, etc.
@@ -104,6 +124,11 @@ namespace UnityCurve {
 			return fieldComponent;
 		}
 
+		/// <summary>
+		/// A nice wrapper function to check if this script needs to instantiate more graph fields.
+		/// </summary>
+		/// <param name="neededCurves">The amount of curves the graph needs this frame.</param>
+		/// <returns>True if this script needs to instante more fields, else false.</returns>
 		private bool NeedToInstantiate(int neededCurves) {
 			return neededCurves > Fields.Count;
 		}
